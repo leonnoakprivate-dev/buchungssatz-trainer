@@ -1,0 +1,2050 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Buchungssatz-Trainer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Buchungssatz">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#eef2f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#070b16" media="(prefers-color-scheme: dark)">
+<style>:root { padding-top: env(safe-area-inset-top, 0px); } html, body { overscroll-behavior-y: none; }</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef2f8;
+  --bg-top: #c9d9ff;
+  --card: #ffffff;
+  --card-2: #f4f6fb;
+  --ink: #0d1424;
+  --muted: #5f6b80;
+  --line: #e1e6ef;
+  --accent: #2f6bff;
+  --accent-soft: #e8efff;
+  --accent-ink: #ffffff;
+  --btn: #0d1424;
+  --btn-ink: #ffffff;
+  --ok: #0f7a47;
+  --ok-bg: #e2f4ea;
+  --bad: #c62f2b;
+  --bad-bg: #fdeceb;
+  --glass: rgba(255, 255, 255, .78);
+  --shadow: 0 1px 2px rgba(13, 20, 36, .04), 0 10px 30px rgba(30, 60, 140, .07);
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 22px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070b16; --bg-top: #1b2d6e; --card: #111a2e; --card-2: #17223a; --ink: #edf1fa; --muted: #95a2ba; --line: #23304c;
+    --accent: #77a2ff; --accent-soft: #1a2853; --accent-ink: #0b1020; --btn: #edf1fa; --btn-ink: #0b1020;
+    --ok: #52c98f; --ok-bg: #11301f; --bad: #ff7a74; --bad-bg: #3b1716;
+    --glass: rgba(17, 26, 46, .78); --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #070b16; --bg-top: #1b2d6e; --card: #111a2e; --card-2: #17223a; --ink: #edf1fa; --muted: #95a2ba; --line: #23304c;
+  --accent: #77a2ff; --accent-soft: #1a2853; --accent-ink: #0b1020; --btn: #edf1fa; --btn-ink: #0b1020;
+  --ok: #52c98f; --ok-bg: #11301f; --bad: #ff7a74; --bad-bg: #3b1716;
+  --glass: rgba(17, 26, 46, .78); --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; font-family: var(--font); font-size: 16px; line-height: 1.5; color: var(--ink);
+  background: radial-gradient(130% 55% at 50% -12%, var(--bg-top), transparent 72%) no-repeat, var(--bg);
+  min-height: 100vh;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  max-width: 540px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px calc(126px + env(safe-area-inset-bottom, 0px));
+}
+#app { display: flex; flex-direction: column; gap: 12px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.02em; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.klein { font-size: 13.5px; }
+.num, .sb, .gross { font-variant-numeric: tabular-nums; }
+.label { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.unter { margin-top: -4px; }
+
+/* Kopf */
+.kopf { display: flex; align-items: center; gap: 12px; padding-top: 4px; }
+.s-kopf { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; }
+.s-kopf .klein { text-align: center; }
+.platz { width: 40px; flex: none; }
+.rund { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--glass); display: grid; place-items: center; flex: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.gruss { font-size: clamp(34px, 9vw, 44px); font-weight: 700; line-height: 1.08; margin: 14px 0 6px; }
+.gruss .name { color: var(--muted); font-weight: 600; }
+.titel { font-size: 30px; font-weight: 700; line-height: 1.15; margin-top: 8px; }
+
+/* Karten */
+.karte {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px;
+  box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; text-align: left; width: 100%; min-width: 0; color: var(--ink);
+}
+button.karte { font: inherit; }
+.tap { transition: transform .12s ease; }
+.tap:active { transform: scale(.985); }
+.karte h2 { font-size: 22px; line-height: 1.2; }
+.karte h3 { font-size: 18px; line-height: 1.3; }
+.fokus { padding: 20px; gap: 8px; }
+.fokus h2 { font-size: 24px; }
+.fokus-fuss { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kachel { flex-direction: row; align-items: center; gap: 12px; min-height: 92px; }
+.gross { font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.ring { flex: none; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 6; }
+.ring-bg { stroke: var(--accent-soft); }
+.ring-fg { stroke: var(--accent); stroke-linecap: round; }
+.hinweis { background: var(--card-2); box-shadow: none; }
+.gesperrt h2 { margin-top: 4px; }
+.gesperrt .zeile svg { color: var(--muted); flex: none; }
+
+/* Woche */
+.woche { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.tag { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; border-radius: 14px; font-size: 13px; }
+.tag b { font-size: 16px; font-weight: 600; }
+.tag.heute { background: var(--accent-soft); }
+.tag i { width: 7px; height: 7px; border-radius: 50%; background: transparent; border: 1.5px solid var(--line); }
+.tag i.halb { border-color: var(--accent); }
+.tag i.voll { background: var(--accent); border-color: var(--accent); }
+
+/* Buttons */
+.btn, .btn-zwei {
+  border: 0; border-radius: 999px; padding: 13px 22px; font-weight: 600; font-size: 15.5px; min-height: 48px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn { background: var(--btn); color: var(--btn-ink); }
+.btn:disabled { opacity: .35; }
+.btn-zwei { background: var(--accent-soft); color: var(--ink); }
+.btn-zwei.rot { background: var(--bad-bg); color: var(--bad); }
+.breit { width: 100%; }
+.link { background: none; border: 0; padding: 8px 0; color: var(--accent); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; }
+.aktionen .link { align-self: center; }
+.link svg { width: 16px; height: 16px; }
+.aktionen { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.aktionen.reihe { flex-direction: row; justify-content: flex-start; align-items: center; gap: 16px; }
+
+/* Listen */
+.liste { display: flex; flex-direction: column; gap: 10px; }
+.le, .schritt, .modus { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+.le .nr, .schritt .nr { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; flex: none; }
+.schritt .nr.fertig { background: var(--accent); color: var(--accent-ink); }
+.schritt .nr svg { width: 18px; height: 18px; }
+.le-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.le-text b { font-weight: 600; }
+.schritt > span:nth-child(2), .modus > span:nth-child(2) { flex: 1; min-width: 0; }
+.schritt > svg, .modus > svg, .zeile > svg { color: var(--muted); flex: none; }
+.le.aus { opacity: .55; box-shadow: none; }
+.le.aus svg { color: var(--muted); flex: none; }
+.balken { height: 5px; background: var(--accent-soft); border-radius: 9px; overflow: hidden; }
+.balken i { display: block; height: 100%; background: var(--accent); border-radius: 9px; }
+.m-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
+button.karte:disabled { opacity: .45; }
+.punkte { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.punkte.haken { list-style: "✓  "; }
+.meldungen { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+
+/* Chips & Segmente */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 8px 14px; font-size: 14.5px; min-height: 40px; }
+.chip.an { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip.an .kn { color: inherit; opacity: .8; }
+.chip.aus { opacity: .4; }
+.chip.an.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.chip.an.bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.seg { display: flex; background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.seg button { flex: 1 1 auto; border: 0; background: none; border-radius: 11px; padding: 8px 10px; font-size: 14px; font-weight: 500; min-height: 38px; color: var(--muted); }
+.seg button.an { background: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); color: var(--ink); font-weight: 600; }
+.seg button.an.ok { background: var(--ok-bg); color: var(--ok); }
+.seg button.an.bad { background: var(--bad-bg); color: var(--bad); }
+.segmente { display: flex; gap: 4px; }
+.segmente i { flex: 1; height: 4px; border-radius: 4px; background: var(--line); }
+.segmente i.voll { background: var(--accent); }
+.segmente i.jetzt { background: linear-gradient(90deg, var(--accent) 50%, var(--line) 50%); }
+
+/* Lektion */
+.lektion { gap: 14px; }
+.lektion p, .lektion li { font-size: 16.5px; line-height: 1.6; max-width: 62ch; }
+.merke { background: var(--accent-soft); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; }
+.merke .label { color: var(--accent); }
+.glossar { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.glossar p { color: var(--muted); }
+.glossar b { color: var(--ink); }
+.frage-text { font-size: 17px; font-weight: 500; }
+.gross-text { font-size: 20px; }
+.optionen { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: left; border: 1.5px solid var(--line); background: var(--card); border-radius: 16px; padding: 13px 16px; font-size: 15.5px; min-height: 48px; }
+.opt.ok { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.opt.bad { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+.opt:disabled:not(.ok):not(.bad) { opacity: .5; }
+.fb { border-radius: 14px; padding: 12px 14px; font-size: 15px; }
+.fb.ok { background: var(--ok-bg); color: var(--ok); }
+.fb.bad { background: var(--bad-bg); color: var(--bad); }
+.fb.neutral { background: var(--card-2); }
+
+/* Buchungssatz */
+.satz { background: var(--card-2); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.satz-datum { font-size: 12.5px; color: var(--muted); }
+.sz { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: baseline; }
+.sk { min-width: 0; hyphens: auto; }
+.sk .kn { display: block; }
+.nt { font-variant-numeric: normal; }
+.sz .sb { min-width: 64px; white-space: nowrap; text-align: right; font-weight: 600; }
+.anw { color: var(--muted); font-style: italic; margin-right: 8px; }
+.sz .anw { margin-left: 14px; }
+.kn { color: var(--muted); font-size: 13px; font-weight: 400; }
+
+/* Tabellen */
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+caption { text-align: left; font-weight: 600; padding-bottom: 6px; font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 8px; border-bottom: 1.5px solid var(--ink); }
+td { padding: 6px 8px; }
+.bilanz { font-size: 13px; }
+.bilanz td, .bilanz th { padding: 4px 5px; }
+.bilanz td:not(.num) { hyphens: auto; overflow-wrap: anywhere; }
+.bilanz td.num, .bilanz tfoot td { text-align: right; white-space: nowrap; }
+.bilanz tfoot td.num { border-top: 1px solid var(--ink); border-bottom: 3px double var(--ink); font-weight: 600; }
+.trenn { border-left: 1.5px solid var(--ink); }
+.fragen td { border-bottom: 1px solid var(--line); white-space: nowrap; }
+
+/* T-Konto */
+.tk-reihe { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.tkonto { font-size: 14px; min-width: 0; }
+.t-kopf { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid var(--ink); padding: 0 2px 4px; gap: 8px; }
+.t-kopf b { text-align: center; flex: 1; font-size: 14px; }
+.t-kopf span { color: var(--muted); font-size: 12px; }
+.t-body { display: grid; grid-template-columns: 1fr 1fr; }
+.t-body > div { padding: 4px 6px; display: flex; flex-direction: column; gap: 2px; }
+.t-body > div:first-child { border-right: 1.5px solid var(--ink); }
+.tz { display: flex; justify-content: space-between; gap: 6px; }
+.tz span:first-child { color: var(--muted); }
+.t-sum { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); }
+.t-sum span { justify-self: end; margin: 2px 6px 0; font-weight: 600; border-bottom: 3px double var(--ink); }
+
+/* Geführt */
+.analyse { border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.an-kopf { font-size: 16px; }
+.seg-zeile { display: flex; flex-direction: column; gap: 4px; }
+.fall p { font-size: 17px; font-weight: 500; line-height: 1.5; }
+
+/* Eingabe */
+.seite-label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; }
+.ez { display: flex; align-items: center; gap: 8px; }
+.ez .anw { margin: 0; width: 20px; flex: none; }
+.konto-btn { flex: 1; min-width: 0; text-align: left; border: 1.5px solid var(--line); background: var(--card); border-radius: 14px; padding: 10px 12px; min-height: 48px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.konto-btn.leer { color: var(--muted); border-style: dashed; }
+.betrag { width: 112px; flex: none; text-align: right; border: 1.5px solid var(--line); background: var(--card); border-radius: 14px; padding: 10px 12px; min-height: 48px; font-variant-numeric: tabular-nums; }
+.x { width: 36px; height: 36px; flex: none; border: 0; background: none; color: var(--muted); display: grid; place-items: center; border-radius: 50%; }
+.x svg { width: 18px; height: 18px; }
+.eingabe { width: 100%; border: 1.5px solid var(--line); background: var(--card); border-radius: 14px; padding: 11px 14px; min-height: 48px; }
+textarea.eingabe { resize: vertical; min-height: 120px; }
+.form { gap: 16px; }
+.feld { display: flex; flex-direction: column; gap: 6px; }
+.feld > span { font-size: 14px; font-weight: 600; }
+
+/* Ende */
+.ende { align-items: center; text-align: center; padding: 28px 20px; }
+.ende-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.ende .aktionen { width: 100%; margin-top: 8px; }
+
+/* Navigation: Tab-Leiste über die volle Breite (iOS-Stil) */
+#nav {
+  position: fixed; z-index: 20;
+  left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 10px));
+  max-width: 540px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 5px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--line); box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
+}
+#nav .pille {
+  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 4); border-radius: 999px;
+  background: var(--accent-soft); transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform .42s cubic-bezier(.3, 1.3, .5, 1);
+}
+#nav button {
+  position: relative; border: 0; background: none; color: var(--muted); border-radius: 999px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  padding: 6px 0 5px; min-height: 52px; font-size: 10px; font-weight: 500; letter-spacing: .01em; line-height: 1.1;
+  transition: color .2s ease;
+}
+#nav button svg { width: 24px; height: 24px; transition: transform .25s cubic-bezier(.3, 1.4, .5, 1); }
+#nav button.an { color: var(--accent); font-weight: 600; }
+#nav button.an svg { transform: scale(1.06); }
+#nav button:active svg { transform: scale(.88); }
+
+/* Animationen */
+@keyframes rein { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes rein-tab { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.025); } 100% { transform: scale(1); } }
+@keyframes wackel { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+@keyframes einblenden { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes hoch { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes toast { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes dunkel { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ring { from { stroke-dashoffset: var(--u); } to { stroke-dashoffset: var(--ziel); } }
+@keyframes haken { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+.rein > * { animation: rein .5s cubic-bezier(.2, .8, .2, 1) both; }
+.rein-tab > * { animation: rein-tab .38s cubic-bezier(.2, .8, .2, 1) both; }
+.rein > :nth-child(2), .rein-tab > :nth-child(2) { animation-delay: .04s; }
+.rein > :nth-child(3), .rein-tab > :nth-child(3) { animation-delay: .08s; }
+.rein > :nth-child(4), .rein-tab > :nth-child(4) { animation-delay: .12s; }
+.rein > :nth-child(5), .rein-tab > :nth-child(5) { animation-delay: .16s; }
+.rein > :nth-child(n+6), .rein-tab > :nth-child(n+6) { animation-delay: .2s; }
+.opt.ok.neu, .chip.an.ok { animation: pop .35s ease; }
+.opt.bad.neu { animation: wackel .4s ease; }
+.fb, .merke + .klein { animation: einblenden .3s ease both; }
+.ring-fg { stroke-dashoffset: var(--ziel); animation: ring 1.1s cubic-bezier(.2, .8, .2, 1) .15s both; }
+.ende-icon { animation: haken .5s cubic-bezier(.3, 1.4, .5, 1) .1s both; }
+.btn, .btn-zwei, .opt, .chip, .seg button, .konto-btn, .kitem, .rund { transition: transform .15s ease, background-color .2s ease, color .2s ease, border-color .2s ease; }
+.btn:active, .btn-zwei:active, .opt:active, .chip:active, .rund:active { transform: scale(.97); }
+.balken i { transition: width .6s cubic-bezier(.2, .8, .2, 1); }
+
+/* Sheet */
+#sheet { position: fixed; inset: 0; z-index: 40; }
+.sheet-bg { position: absolute; inset: 0; background: rgba(5, 10, 25, .45); animation: dunkel .25s ease both; }
+.sheet-box {
+  position: absolute; left: 0; right: 0; bottom: 0; max-height: 86vh; overflow: auto; background: var(--card);
+  border-radius: 24px 24px 0 0; animation: hoch .38s cubic-bezier(.2, .9, .25, 1) both; display: flex; flex-direction: column; gap: 12px; margin: 0 auto; max-width: 540px;
+  padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.sheet-kopf { display: flex; gap: 10px; align-items: center; position: sticky; top: -18px; background: var(--card); padding: 4px 0 8px; z-index: 1; }
+.sheet-kopf .link { align-self: center; }
+.kliste { display: flex; flex-direction: column; }
+.kliste .label { padding: 12px 0 4px; }
+.kitem { display: flex; gap: 12px; align-items: baseline; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: none; padding: 12px 2px; min-height: 48px; }
+.kitem .abbr { font-weight: 700; min-width: 64px; }
+
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 84px)); z-index: 50; background: var(--btn); color: var(--btn-ink); padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 500; box-shadow: var(--shadow); max-width: calc(100% - 32px); text-align: center; animation: toast .25s ease both; }
+
+@media (max-width: 380px) {
+  .betrag { width: 96px; }
+  .kachel { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap" lang="de"><main id="app"></main></div>
+<nav id="nav" aria-label="Hauptnavigation"></nav>
+<div id="sheet" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+/* Kontenplan (Abkürzungen laut Kurs-Kontenplan, ohne Kontonummern) */
+const KONTEN = [
+["AAFA","Ausserplanmässige Abschreibungen"],["AFA","Abschreibungen auf Sachanlagen"],["AFET","Abschreibungen Ersatzteilvorräte"],
+["AFFO","Abschreibungen von Forderungen"],["AFGWG","Abschreibungen geringwertige Wirtschaftsgüter"],["AFWV","Abschreibungen Warenvorräte"],
+["AIB","Anlagen im Bau"],["ARA","Aktive Rechnungsabgrenzungen"],["AUDA","Aufgenommene Darlehen"],["AVP","Aufwände für Vorperioden"],
+["BA-LKW","Betriebsaufwände LKWs"],["BA-PKW","Betriebsaufwände PKWs/Kombis"],["BET","Beteiligungen"],["BETE","Beteiligungserträge"],
+["BEV","Bestandsveränderungen"],["BGH","Bankguthaben"],["BGST","Bebaute Grundstücke"],["BMAS","Büromaschinen"],["BSTV","Betriebsstoffvorräte"],
+["BKK","Bankkredite"],["BKO","Bezugskosten"],["BMB","Barverkehr mit Banken"],["BMES","Büromaterialeinsatz"],["BSTE","Betriebsstoffeinsatz"],
+["BWAA","Buchwert abgegangener Anlagen"],["DB-ANG","Dienstgeberbeitrag Angestellte"],["DB-ARB","Dienstgeberbeitrag Arbeiter"],
+["DZ-ANG","Zuschlag zum Dienstgeberbeitrag Angestellte"],["DZ-ARB","Zuschlag zum Dienstgeberbeitrag Arbeiter"],
+["EAEL","Erträge aus aktivierten Eigenleistungen"],["EARST","Erträge aus Auflösung von Rückstellungen"],["EAUF","Energieaufwände"],
+["EAV","Erträge aus Anlagenverkäufen"],["EAWB","Erträge aus Auflösung von Wertberichtigungen zu Forderungen"],["EB","Erlösberichtigungen"],
+["EBK","Eröffnungsbilanzkonto"],["EK","Eigenkapital"],["ESK","Erhaltene Skonti"],["ETES","Ersatzteileinsatz"],["ETV","Ersatzteilvorräte"],
+["EV","Eigenverbrauch"],["EWBF","Einzelwertberichtigungen zu Forderungen"],["FE","Fertigerzeugnisse"],["FEE","Fertigerzeugniserträge"],
+["FODK","Forderungen Debitkarte"],["FOKK","Forderungen Kreditkarte"],["GA","Geschäftsausstattung"],["GA-ANG","Gehaltsaufwände Angestellte"],
+["GARA","Garantieaufwände"],["GEB","Gebäude"],["GEDA","Gewährte Darlehen"],["GSK","Gewährte Skonti"],["GRST","Grundsteuer"],
+["GWG","Geringwertige Wirtschaftsgüter"],["G&V","Gewinn- und Verlustkonto"],["HEIZES","Heizöleinsatz"],["HEIZV","Heizölvorräte"],
+["HES","Hilfsstoffeinsatz"],["HFE","Halbfertigerzeugnisse"],["HV","Hilfsstoffvorräte"],["KA","Kassa"],["KommSt-ANG","Kommunalsteuer Angestellte"],
+["KommSt-ARB","Kommunalsteuer Arbeiter"],["KUM AFA","Kumulierte Abschreibungen zu …"],["LA-ARB","Lohnaufwände Arbeiter"],["LEAA","Leasingaufwände"],
+["LEAE","Leasingerträge"],["LF","Lieferforderungen"],["LKW","Lastkraftwagen (LKWs)"],["LV","Lieferverbindlichkeiten"],["MA","Mietaufwände"],
+["MAS","Maschinen"],["ME","Mieterträge"],["PDKK","Provisionsaufwände für Debit- & Kreditkarten"],["PERA","Personalaufwände"],
+["PKW","Personenkraftwagen (PKWs) und Kombis"],["PORTA","Portoaufwände"],["PRA","Passive Rechnungsabgrenzungen"],["PRIV","Privat"],
+["PRIV-ST","Privatsteuern"],["PROVA","Provisionsaufwände"],["PROVE","Provisionserträge"],["PRST","Pauschale Rückstellung für …"],
+["PSK","Postscheckkonto"],["PWBF","Pauschalwertberichtigungen zu Forderungen"],["RBA","Rechts- und Beratungsaufwände"],["REPA","Reparaturaufwände"],
+["RES","Rohstoffeinsatz"],["RMES","Reinigungsmaterialeinsatz"],["RMV","Reinigungsmaterialvorräte"],["RST","Rückstellungen für …"],
+["RV","Rohstoffvorräte"],["SBK","Schlussbilanzkonto"],["SCHA","Schadensaufwände"],["SEA","Schadenersatzaufwände"],["SGB","Schwebende Geldbewegungen"],
+["SMA","Schmiermittelaufwände"],["SMV","Schmiermittelvorräte"],["SOFO","Sonstige Forderungen"],["SOVB","Sonstige Verbindlichkeiten"],
+["SPA","Spesenaufwände des Geldverkehrs"],["STBA","Steuerberatungsaufwände"],["SV-DGA-ANG","Sozialversicherung Dienstgeberanteil Angestellte"],
+["SV-DGA-ARB","Sozialversicherung Dienstgeberanteil Arbeiter"],["TEA","Telefonaufwände"],["TRA","Transportaufwände"],
+["ÜBA","Übrige betriebliche Aufwände"],["ÜBE","Übrige betriebliche Erträge"],["UGST","Unbebaute Grundstücke"],["UST","Umsatzsteuer"],
+["USTZ","Umsatzsteuerzahllast"],["VA","Versicherungsaufwände"],["VA-LKW","Versicherungsaufwände LKWs"],["VA-PKW","Versicherungsaufwände PKWs"],
+["VA-SVA","Versicherungsaufwand Sozialversicherung des Unternehmers"],["VB-DN","Verbindlichkeiten Dienstnehmer"],["VB-FA","Verbindlichkeiten Finanzamt"],
+["VB-GEM","Verbindlichkeiten Gemeinde"],["VB-KK","Verbindlichkeiten Krankenkasse"],["VB-SVA","Verbindlichkeiten Sozialversicherung des Unternehmers"],
+["VBBK","Verbindlichkeiten Bankomatkarte"],["VBKK","Verbindlichkeiten Kreditkarte"],["VEE","Versicherungsentschädigungserträge"],
+["VPES","Verpackungsmaterialeinsatz"],["VPV","Verpackungsmaterialvorräte"],["VST","Vorsteuer"],["VZA","Verzugszinsenaufwände"],
+["VZE","Verzugszinsenerträge"],["WERBA","Werbeaufwände"],["WP-AV","Wertpapiere des Anlagevermögens"],["WP-UV","Wertpapiere des Umlaufvermögens"],
+["WE","Warenerträge"],["WES","Wareneinsatz"],["WV","Warenvorräte"],["ZA","Zinsaufwände"],["ZE","Zinserträge"],
+["ZE-WAV","Zinserträge aus Wertpapieren des AV"],["ZE-WUV","Zinserträge aus Wertpapieren des UV"],["ZUS-AV","Zuschreibungen zum AV"],
+["ZUS-UV","Zuschreibungen zum UV"],["ZUW-RST","Zuweisung zu (Pauschal-)Rückstellungen"],["ZWBF","Zuweisung zu Wertberichtigungen zu Forderungen"]
+];
+
+/* Kontoart je Konto: aktiv | passiv | aufwand | ertrag | hilf. Ergänzt je LE, nur was geprüft ist. */
+const ART = {
+  KA:"aktiv", BGH:"aktiv", GA:"aktiv", PKW:"aktiv", LKW:"aktiv", MAS:"aktiv", GEB:"aktiv", BMAS:"aktiv",
+  UGST:"aktiv", BGST:"aktiv", WV:"aktiv", LF:"aktiv", GEDA:"aktiv", PSK:"aktiv",
+  EK:"passiv", LV:"passiv", BKK:"passiv", AUDA:"passiv",
+  EBK:"hilf", SBK:"hilf", "G&V":"hilf",
+  /* LE 2 */
+  MA:"aufwand", WERBA:"aufwand", TEA:"aufwand", VA:"aufwand", REPA:"aufwand", ZA:"aufwand", EAUF:"aufwand", TRA:"aufwand",
+  "GA-ANG":"aufwand", "LA-ARB":"aufwand", "SV-DGA-ANG":"aufwand", "SV-DGA-ARB":"aufwand", "DB-ANG":"aufwand", "DB-ARB":"aufwand",
+  "DZ-ANG":"aufwand", "DZ-ARB":"aufwand", "KommSt-ANG":"aufwand", "KommSt-ARB":"aufwand", "VA-SVA":"aufwand",
+  ZE:"ertrag", ME:"ertrag", PROVE:"ertrag",
+  "VB-KK":"passiv", "VB-FA":"passiv", "VB-DN":"passiv", "VB-GEM":"passiv", "VB-SVA":"passiv",
+  /* LE 3 */
+  WES:"aufwand", WE:"ertrag", EV:"ertrag", PRIV:"sonder",
+  /* LE 4 */
+  VST:"aktiv", UST:"passiv", USTZ:"passiv"
+};
+
+</script>
+<script>
+/* LE 1 · Einführung, Bestandskonten, Bilanz
+   Eigene Texte und eigene Zahlen. Grundlage: Folien LE 1 + Arbeitsblatt LE 1 (nur Inhalt, nichts kopiert).
+   geprueft: false, bis Leon den Gegentest bestanden hat und der Prüfer gegengecheckt hat. */
+window.INHALT = window.INHALT || {};
+INHALT[1] = {
+  titel: "Einführung, Bestandskonten, Bilanz",
+  arten: ["aktiv", "passiv", "hilf"],
+  konten: ["KA", "BGH", "GA", "PKW", "LKW", "MAS", "GEB", "BMAS", "WV", "LF", "GEDA", "EK", "LV", "BKK", "AUDA", "EBK", "SBK"],
+  gegentest: "Löse das Arbeitsblatt zu LE 1 (Willi Resetarits, Aufgaben a–i) und die Zusatzbeispiele zu LE 1 auf Papier, ohne App. Vergleich danach mit der offiziellen Lösung. Klappt alles → LE 1 sitzt.",
+  kannst: [
+    "Eine Bilanz aufstellen: links Vermögen (Aktiva), rechts Kapital (Passiva), beide Seiten gleich gross",
+    "Aktive und passive Bestandskonten auseinanderhalten",
+    "Mit den 4 Fragen jeden Buchungssatz herleiten, auch zusammengesetzte",
+    "Eröffnungsbuchungen mit dem EBK und Abschlussbuchungen mit dem SBK",
+    "Den Saldo eines T-Kontos berechnen und richtig eintragen"
+  ],
+  abschnitte: [
+    {
+      titel: "Worum es geht",
+      inhalt: [
+        "Buchhaltung beantwortet zwei Fragen: <b>Was besitzt das Unternehmen?</b> Und <b>woher kommt das Geld dafür?</b> Alles in diesem Fach baut darauf auf.",
+        "Das Geld, das im Unternehmen steckt, heisst <b>Kapital</b>. Die Dinge, in denen es angelegt ist, heissen <b>Vermögen</b>.",
+        { liste: [
+          "<b>Kapital</b> = woher die Mittel kommen: eigenes Geld, Kredite, offene Rechnungen",
+          "<b>Vermögen</b> = wofür sie verwendet werden: Bankguthaben, Kassa, Möbel, Fahrzeuge, Waren",
+          "<b>Aufwände</b> und <b>Erträge</b> machen das Unternehmen ärmer bzw. reicher. Die kommen in LE 2."
+        ] },
+        { merke: "Alle Beträge sind in <b>Euro</b>, nicht in Franken. Der Kurs und die Prüfung rechnen mit dem österreichischen System (Euro, 20 % Umsatzsteuer). Also genau so üben, wie es in der Prüfung kommt." }
+      ],
+      check: {
+        frage: "Lena gründet ein Fotostudio mit € 15.000,-- Erspartem und kauft davon eine Profikamera. Was ist die Kamera?",
+        optionen: ["Vermögen", "Kapital", "Aufwand"],
+        richtig: 0,
+        erklaerung: "In der Kamera ist Lenas Geld angelegt, sie nutzt sie jahrelang → Vermögen. Die € 15.000,-- Erspartes sind das Kapital."
+      }
+    },
+    {
+      titel: "Die Bilanz",
+      inhalt: [
+        "Die Bilanz stellt beides nebeneinander: links das Vermögen (<b>Aktiva</b>), rechts das Kapital (<b>Passiva</b>). Beide Seiten sind immer gleich gross, denn jeder Euro Vermögen kommt irgendwoher.",
+        "Beispiel: Mia gründet eine Agentur mit € 40.000,-- eigenem Geld. € 35.000,-- legt sie aufs Bankkonto, € 5.000,-- in die Kassa.",
+        { bilanz: { titel: "Gründungsbilanz", aktiva: [["Bankguthaben", 35000], ["Kassa", 5000]], passiva: [["Eigenkapital", 40000]] } },
+        "Links steht die <b>Mittelverwendung</b>, rechts die <b>Mittelherkunft</b>. Eigenes Geld ist <b>Eigenkapital</b>. Geliehenes Geld (Kredite, offene Rechnungen) ist <b>Fremdkapital</b>.",
+        { merke: "Reihenfolge: Auf der Aktivseite steht oben das <b>Anlagevermögen</b> (Gebäude, Maschinen, Fahrzeuge, Geschäftsausstattung), darunter das <b>Umlaufvermögen</b> (Waren, Forderungen, Bank, Kassa). Auf der Passivseite steht oben das Eigenkapital, darunter das Fremdkapital." }
+      ],
+      check: {
+        frage: "Was steht auf der Passivseite der Bilanz?",
+        optionen: ["Woher das Geld kommt: Eigen- und Fremdkapital", "Wofür das Geld verwendet wird", "Alle Einnahmen des Jahres"],
+        richtig: 0,
+        erklaerung: "Passiva = Mittelherkunft. Aktiva = Mittelverwendung."
+      }
+    },
+    {
+      titel: "Geschäftsfälle verändern die Bilanz",
+      inhalt: [
+        "Jeder Geschäftsfall verändert mindestens zwei Posten. Mia kauft einen Firmenwagen um € 4.000,-- bar:",
+        { bilanz: { titel: "Bilanz nach dem Kauf", aktiva: [["PKW", 4000], ["Bankguthaben", 35000], ["Kassa", 1000]], passiva: [["Eigenkapital", 40000]] } },
+        "Die Kassa sinkt um 4.000, der Posten PKW steigt um 4.000. Die Bilanzsumme bleibt gleich, nur die Zusammensetzung ändert sich.",
+        "Kauft Mia dagegen etwas <b>auf Ziel</b> (jetzt kaufen, später zahlen), steigt das Vermögen <i>und</i> das Fremdkapital: Es entsteht eine <b>Lieferverbindlichkeit</b>."
+      ],
+      check: {
+        frage: "Mia kauft Büromöbel um € 2.000,-- auf Ziel. Was passiert mit der Bilanzsumme?",
+        optionen: ["Sie steigt um 2.000", "Sie bleibt gleich", "Sie sinkt um 2.000"],
+        richtig: 0,
+        erklaerung: "Geschäftsausstattung +2.000 auf der Aktivseite, Lieferverbindlichkeiten +2.000 auf der Passivseite. Beide Seiten wachsen gleich viel."
+      }
+    },
+    {
+      titel: "Konten: Soll und Haben",
+      inhalt: [
+        "<b>Das Problem:</b> Nach jedem Geschäftsfall eine neue Bilanz zu zeichnen wäre viel zu viel Arbeit. Deshalb bekommt jeder Posten der Bilanz sein eigenes <b>Konto</b>. Darauf schreibst du nur noch, was sich bei diesem einen Posten ändert.",
+        "<b>So sieht ein Konto aus:</b> wie ein grosses T. Links ist die Seite <b>Soll</b>, rechts die Seite <b>Haben</b>. Das sind einfach nur Namen für links und rechts. Nimm die Wörter nicht wörtlich, sie bedeuten nicht „sollen“ und „haben“.",
+        "<b>Die eine Regel, die du dir merken musst:</b> Ein Konto wächst auf der Seite, auf der sein Posten in der Bilanz steht.",
+        { liste: [
+          "Kassa steht in der Bilanz <b>links</b> (Aktiva) → das Konto Kassa wächst <b>links</b>, im Soll. Solche Konten heissen <b>aktive Bestandskonten</b>.",
+          "Lieferverbindlichkeiten stehen in der Bilanz <b>rechts</b> (Passiva) → das Konto wächst <b>rechts</b>, im Haben. Solche Konten heissen <b>passive Bestandskonten</b>.",
+          "Was weniger wird, steht immer auf der <b>anderen</b> Seite."
+        ] },
+        { tabelle: { kopf: ["Konto", "Start", "+", "–"], zeilen: [["<b>aktiv</b>", "Soll", "Soll", "Haben"], ["<b>passiv</b>", "Haben", "Haben", "Soll"]] } },
+        "<i>Start</i> = Anfangsbestand, <i>+</i> = Zugang, <i>–</i> = Abgang.",
+        "<b>Beispiel Kassa:</b> Am Anfang liegen € 5.000,-- in der Kassa → links (Soll). Mia kauft einen PKW um € 4.000,-- bar → Kassa wird weniger → rechts (Haben). Übrig: 5.000 − 4.000 = 1.000.",
+        { tkonten: [
+          { name: "Kassa", soll: [["EBK", 5000]], haben: [["PKW", 4000]] },
+          { name: "Lieferverbindlichkeiten", soll: [], haben: [["GA", 2000]] }
+        ] },
+        "Vor jeden Betrag schreibst du das <b>Gegenkonto</b>, also das andere Konto im selben Fall. Bei Kassa steht „PKW“, weil das Geld in den PKW geflossen ist. EBK ist das Hilfskonto für die Anfangsbestände, mehr dazu in Abschnitt 7.",
+        { merke: "Wo steht der Posten in der Bilanz? Auf dieser Seite wächst sein Konto. Aktiv = links = Soll. Passiv = rechts = Haben." }
+      ],
+      check: {
+        frage: "Das Konto Bankkredite (passiv) nimmt zu. Auf welcher Seite steht der Betrag?",
+        optionen: ["Haben", "Soll"],
+        richtig: 0,
+        erklaerung: "Bankkredite sind Fremdkapital, also passiv. Zugänge stehen bei passiven Konten im Haben."
+      }
+    },
+    {
+      titel: "Die 4 Fragen zum Buchungssatz",
+      inhalt: [
+        "Jeder Geschäftsfall wird als <b>Buchungssatz</b> notiert: zuerst das Konto im Soll, dann „an“ und das Konto im Haben, jeweils mit Betrag. Du findest ihn mit 4 Fragen:",
+        { liste: ["Welche Konten sind beteiligt?", "Welche Kontoart: aktiv oder passiv?", "Zugang (+) oder Abgang (–)?", "Also Soll oder Haben?"], nummer: true },
+        "Beispiel: Wir heben € 500,-- vom Bankkonto ab und legen sie in die Kassa.",
+        { fragen: [["KA", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]] },
+        { satz: { soll: [["KA", 500]], haben: [["BGH", 500]] } },
+        { merke: "Die Summe im Soll ist immer gleich der Summe im Haben. Jeder Betrag wird doppelt erfasst: einmal im Soll, einmal im Haben (doppelte Buchhaltung)." }
+      ],
+      check: {
+        frage: "Wir zahlen eine Lieferantenrechnung von € 900,-- per Bank. Welcher Buchungssatz stimmt?",
+        optionen: ["Lieferverbindlichkeiten an Bankguthaben 900,--", "Bankguthaben an Lieferverbindlichkeiten 900,--", "Lieferverbindlichkeiten an Kassa 900,--"],
+        richtig: 0,
+        erklaerung: "LV ist passiv und nimmt ab → Soll. BGH ist aktiv und nimmt ab → Haben."
+      }
+    },
+    {
+      titel: "Forderungen, Verbindlichkeiten, mehrere Konten",
+      inhalt: [
+        "Kaufen wir <b>auf Ziel</b>, schulden wir dem Lieferanten (Kreditor) Geld → <b>Lieferverbindlichkeiten (LV)</b>, passiv.",
+        "Verkaufen wir auf Ziel, schuldet uns der Kunde (Debitor) Geld → <b>Lieferforderungen (LF)</b>, aktiv.",
+        { liste: [
+          "Kauf auf Ziel: LV steigt → Haben",
+          "Wir bezahlen den Lieferanten: LV sinkt → Soll",
+          "Der Kunde bezahlt seine Rechnung: LF sinkt → Haben"
+        ] },
+        "Ein Fall kann mehr als zwei Konten betreffen. Das ist ein <b>zusammengesetzter Buchungssatz</b>. Beispiel: Möbel um € 3.000,--, davon € 1.000,-- bar, der Rest auf Ziel:",
+        { satz: { soll: [["GA", 3000]], haben: [["KA", 1000], ["LV", 2000]] } },
+        { merke: "In der Prüfung steht nicht, wie viele Zeilen ein Buchungssatz hat. Lies genau: Wird teils bar, teils auf Ziel bezahlt, brauchst du mehrere Konten auf einer Seite." }
+      ],
+      check: {
+        frage: "Ein Kunde überweist eine offene Rechnung von € 1.200,-- auf unser Bankkonto. Was passiert mit den Lieferforderungen?",
+        optionen: ["Sie sinken → Haben", "Sie steigen → Soll", "Sie sinken → Soll"],
+        richtig: 0,
+        erklaerung: "Die Forderung ist bezahlt, also weg: Abgang auf einem aktiven Konto → Haben. Buchungssatz: BGH an LF 1.200,--."
+      }
+    },
+    {
+      titel: "Eröffnung mit dem EBK",
+      inhalt: [
+        "Am 1.1. kommen die Anfangsbestände aus der Bilanz auf die Konten. Das Gegenkonto ist das <b>Eröffnungsbilanzkonto (EBK)</b>, ein Hilfskonto.",
+        "Das EBK ist das <b>Spiegelbild</b> der Bilanz: Was in der Bilanz links steht, steht im EBK rechts, und umgekehrt.",
+        { liste: ["Aktives Bestandskonto: <b>Konto an EBK</b>", "Passives Bestandskonto: <b>EBK an Konto</b>"] },
+        "Mias Agentur am 1.1.:",
+        { satz: { soll: [["BGH", 35000]], haben: [["EBK", 35000]] } },
+        { satz: { soll: [["EBK", 40000]], haben: [["EK", 40000]] } }
+      ],
+      check: {
+        frage: "Eröffnung: Bankkredite € 12.000,--. Welcher Buchungssatz?",
+        optionen: ["EBK an Bankkredite 12.000,--", "Bankkredite an EBK 12.000,--"],
+        richtig: 0,
+        erklaerung: "Bankkredite sind passiv. Der Anfangsbestand steht im Haben, also EBK an BKK."
+      }
+    },
+    {
+      titel: "Abschluss mit dem SBK",
+      inhalt: [
+        "Am 31.12. wird jedes Konto abgeschlossen. Zuerst rechnest du den <b>Saldo</b> (Schlussbestand): die Differenz zwischen den beiden Seiten. Er kommt auf die <b>kleinere</b> Seite, damit beide Seiten gleich gross sind.",
+        { tkonten: [
+          { name: "Kassa", soll: [["EBK", 5000], ["BGH", 500]], haben: [["PKW", 4000], ["SBK", 1500]], summe: 5500, saldo: "H" }
+        ] },
+        "Das Gegenkonto für den Abschluss ist das <b>Schlussbilanzkonto (SBK)</b>:",
+        { liste: ["Aktives Bestandskonto: <b>SBK an Konto</b>", "Passives Bestandskonto: <b>Konto an SBK</b>"] },
+        { satz: { soll: [["SBK", 1500]], haben: [["KA", 1500]] } },
+        "Das SBK ist inhaltlich die Schlussbilanz. Und die Schlussbilanz vom 31.12. ist die Eröffnungsbilanz am 1.1. des nächsten Jahres.",
+        { merke: "Buchungen nur zwischen Bestandskonten ändern das Eigenkapital nicht, sie sind <b>erfolgsneutral</b>. Gewinn und Verlust entstehen erst über Aufwände und Erträge (LE 2)." }
+      ],
+      check: {
+        frage: "Abschluss: Die Lieferverbindlichkeiten haben einen Schlussbestand von € 2.000,--. Welcher Buchungssatz?",
+        optionen: ["LV an SBK 2.000,--", "SBK an LV 2.000,--"],
+        richtig: 0,
+        erklaerung: "LV ist passiv, der Saldo steht im Soll. Also Konto an SBK."
+      }
+    }
+  ],
+  faelle: [
+    { id: "le1-01", gefuehrt: true, datum: "8.1.",
+      text: "Kauf von Büromöbeln (Geschäftsausstattung) per Banküberweisung, € 3.200,--.",
+      soll: [{ konto: "GA", betrag: 3200 }], haben: [{ konto: "BGH", betrag: 3200 }],
+      analyse: [["GA", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Das Vermögen wechselt nur die Form: Aus Geld werden Möbel.",
+      fehler: "BGH ins Soll, weil „es geht um die Bank“. Das Geld verlässt die Bank → Abgang → Haben." },
+    { id: "le1-02", datum: "12.1.",
+      text: "Wir heben € 800,-- vom Bankkonto ab und legen das Bargeld in die Geschäftskassa.",
+      soll: [{ konto: "KA", betrag: 800 }], haben: [{ konto: "BGH", betrag: 800 }],
+      analyse: [["KA", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Aktiv an aktiv: Ein Vermögensposten steigt, ein anderer sinkt.",
+      fehler: "Seiten vertauscht. Frag zuerst: Welches Konto bekommt etwas? Das steht im Soll." },
+    { id: "le1-03", gefuehrt: true, datum: "15.1.",
+      text: "Kauf eines Lieferwagens (LKW) auf Ziel, € 18.500,--.",
+      soll: [{ konto: "LKW", betrag: 18500 }], haben: [{ konto: "LV", betrag: 18500 }],
+      analyse: [["LKW", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "„Auf Ziel“ heisst: später zahlen. Es entsteht eine Lieferverbindlichkeit.",
+      fehler: "BGH statt LV. Bei „auf Ziel“ fliesst noch kein Geld." },
+    { id: "le1-04", gefuehrt: true, datum: "2.2.",
+      text: "Wir zahlen dem Autohändler einen Teil des Lieferwagens vom 15.1. per Banküberweisung, € 6.000,--.",
+      soll: [{ konto: "LV", betrag: 6000 }], haben: [{ konto: "BGH", betrag: 6000 }],
+      analyse: [["LV", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Schulden zurückzahlen: Das passive Konto sinkt → Soll.",
+      fehler: "LV ins Haben. Im Haben steht bei LV nur, was die Schuld grösser macht." },
+    { id: "le1-05", gefuehrt: true, datum: "10.2.",
+      text: "Wir nehmen einen Bankkredit auf. Die Bank schreibt unserem Bankguthaben € 20.000,-- gut.",
+      soll: [{ konto: "BGH", betrag: 20000 }], haben: [{ konto: "BKK", betrag: 20000 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["BKK", "passiv", "+", "H"]],
+      merke: "Ein Kredit ist Fremdkapital. Bankkredite sind passiv und steigen → Haben.",
+      fehler: "Bankguthaben und Bankkredite verwechselt: Das Guthaben gehört uns (aktiv), den Kredit schulden wir (passiv)." },
+    { id: "le1-06", datum: "20.2.",
+      text: "Wir zahlen € 1.200,-- Bargeld aus der Kassa auf das Bankkonto ein.",
+      soll: [{ konto: "BGH", betrag: 1200 }], haben: [{ konto: "KA", betrag: 1200 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Die Umkehrung der Abhebung: Jetzt bekommt die Bank, die Kassa gibt ab.",
+      fehler: "Aus Gewohnheit KA an BGH. Erst prüfen, wohin das Geld fliesst." },
+    { id: "le1-07", datum: "3.3.",
+      text: "Kauf eines Firmen-PKW gegen Banküberweisung, € 24.000,--.",
+      soll: [{ konto: "PKW", betrag: 24000 }], haben: [{ konto: "BGH", betrag: 24000 }],
+      analyse: [["PKW", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Fahrzeuge sind Anlagevermögen. Im Kontenplan: PKW bzw. LKW.",
+      fehler: "Den Kauf als Aufwand sehen. Ein Auto nutzt du jahrelang → Vermögen." },
+    { id: "le1-08", datum: "9.3.",
+      text: "Wir zahlen € 2.500,-- des Bankkredits per Banküberweisung zurück (Tilgung).",
+      soll: [{ konto: "BKK", betrag: 2500 }], haben: [{ konto: "BGH", betrag: 2500 }],
+      analyse: [["BKK", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Tilgung: Die Schuld sinkt → passives Konto im Soll. Beide Konten werden kleiner.",
+      fehler: "BKK ins Haben, weil „Bank = Haben“. Hier sinken beide Konten." },
+    { id: "le1-09", datum: "14.3.",
+      text: "Kauf einer Maschine auf Ziel, € 7.800,--.",
+      soll: [{ konto: "MAS", betrag: 7800 }], haben: [{ konto: "LV", betrag: 7800 }],
+      analyse: [["MAS", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Vermögen und Fremdkapital steigen gleichzeitig. Die Bilanzsumme wächst.",
+      fehler: "Die Maschine ins Haben, weil „wir zahlen ja“. Gezahlt wird erst später." },
+    { id: "le1-10", datum: "2.4.",
+      text: "Ein Kunde bezahlt seine offene Rechnung (Lieferforderung) bar, € 650,--.",
+      soll: [{ konto: "KA", betrag: 650 }], haben: [{ konto: "LF", betrag: 650 }],
+      analyse: [["KA", "aktiv", "+", "S"], ["LF", "aktiv", "–", "H"]],
+      merke: "Aus der Forderung wird Bargeld: aktiv an aktiv.",
+      fehler: "LF ins Soll. Die Forderung verschwindet → Abgang → Haben." },
+    { id: "le1-11", datum: "8.4.",
+      text: "Ein Kunde überweist eine offene Rechnung auf unser Bankkonto, € 2.100,--.",
+      soll: [{ konto: "BGH", betrag: 2100 }], haben: [{ konto: "LF", betrag: 2100 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["LF", "aktiv", "–", "H"]],
+      merke: "Gleiches Muster wie bar, nur mit dem Bankkonto.",
+      fehler: "LV statt LF. Der Kunde schuldet uns etwas → Forderung, nicht Verbindlichkeit." },
+    { id: "le1-12", datum: "20.4.",
+      text: "Wir gewähren einem Geschäftspartner ein Darlehen und überweisen ihm € 5.000,--.",
+      soll: [{ konto: "GEDA", betrag: 5000 }], haben: [{ konto: "BGH", betrag: 5000 }],
+      analyse: [["GEDA", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Gewährtes Darlehen: Er schuldet uns → aktiv (GEDA). Aufgenommenes Darlehen: Wir schulden → passiv (AUDA).",
+      fehler: "AUDA statt GEDA. Frag dich: Wer schuldet wem?" },
+    { id: "le1-13", datum: "5.5.",
+      text: "Wir begleichen eine Lieferantenrechnung bar, € 430,--.",
+      soll: [{ konto: "LV", betrag: 430 }], haben: [{ konto: "KA", betrag: 430 }],
+      analyse: [["LV", "passiv", "–", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Bezahlen heisst: Schuld weg (Soll), Geld weg (Haben).",
+      fehler: "KA ins Soll, weil Bargeld „bewegt“ wird. Es geht raus → Haben." },
+    { id: "le1-14", gefuehrt: true, datum: "18.5.",
+      text: "Kauf von Geschäftsausstattung um € 2.700,--. € 1.000,-- zahlen wir bar, der Rest bleibt auf Ziel offen.",
+      soll: [{ konto: "GA", betrag: 2700 }], haben: [{ konto: "KA", betrag: 1000 }, { konto: "LV", betrag: 1700 }],
+      analyse: [["GA", "aktiv", "+", "S"], ["KA", "aktiv", "–", "H"], ["LV", "passiv", "+", "H"]],
+      merke: "Zusammengesetzter Buchungssatz: Soll-Summe = Haben-Summe (2.700 = 1.000 + 1.700).",
+      fehler: "Nur eine Haben-Zeile, oder der Rest falsch gerechnet." },
+    { id: "le1-15", datum: "25.5.",
+      text: "Kauf eines Lieferwagens um € 30.000,--. € 10.000,-- zahlen wir per Bank, € 20.000,-- finanziert ein Bankkredit, den die Bank direkt an den Händler auszahlt.",
+      soll: [{ konto: "LKW", betrag: 30000 }], haben: [{ konto: "BGH", betrag: 10000 }, { konto: "BKK", betrag: 20000 }],
+      analyse: [["LKW", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"], ["BKK", "passiv", "+", "H"]],
+      merke: "Der Kredit landet nie auf unserem Bankkonto, er geht direkt an den Händler → BKK direkt im Haben.",
+      fehler: "Den Kredit zuerst auf BGH buchen. Lies genau, wohin das Geld fliesst." },
+    { id: "le1-16", datum: "1.1.",
+      text: "Eröffnung: Das Bankguthaben hat einen Anfangsbestand von € 42.000,--.",
+      soll: [{ konto: "BGH", betrag: 42000 }], haben: [{ konto: "EBK", betrag: 42000 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["EBK", "hilf", "", "H"]],
+      merke: "Aktives Konto: Anfangsbestand im Soll → Konto an EBK.",
+      fehler: "EBK an BGH. Das EBK ist das Spiegelbild der Bilanz." },
+    { id: "le1-17", datum: "1.1.",
+      text: "Eröffnung: Das Eigenkapital beträgt € 65.000,--.",
+      soll: [{ konto: "EBK", betrag: 65000 }], haben: [{ konto: "EK", betrag: 65000 }],
+      analyse: [["EBK", "hilf", "", "S"], ["EK", "passiv", "+", "H"]],
+      merke: "Passives Konto: Anfangsbestand im Haben → EBK an Konto.",
+      fehler: "EK an EBK. Eigenkapital steht in der Bilanz rechts, also auf dem Konto auch rechts (Haben)." },
+    { id: "le1-18", datum: "1.1.",
+      text: "Eröffnung: Die Lieferverbindlichkeiten haben einen Anfangsbestand von € 3.900,--.",
+      soll: [{ konto: "EBK", betrag: 3900 }], haben: [{ konto: "LV", betrag: 3900 }],
+      analyse: [["EBK", "hilf", "", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Alle passiven Konten werden gleich eröffnet: EBK an Konto.",
+      fehler: "LV an EBK. Das wäre die Eröffnung eines aktiven Kontos." },
+    { id: "le1-19", datum: "31.12.",
+      text: "Abschluss: Das Konto Kassa hat einen Schlussbestand (Saldo) von € 1.150,--.",
+      soll: [{ konto: "SBK", betrag: 1150 }], haben: [{ konto: "KA", betrag: 1150 }],
+      analyse: [["SBK", "hilf", "", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Aktives Konto: Der Saldo steht im Haben → SBK an Konto.",
+      fehler: "KA an SBK. Das wäre der Abschluss eines passiven Kontos." },
+    { id: "le1-20", datum: "31.12.",
+      text: "Abschluss: Die Bankkredite haben einen Schlussbestand von € 17.500,--.",
+      soll: [{ konto: "BKK", betrag: 17500 }], haben: [{ konto: "SBK", betrag: 17500 }],
+      analyse: [["BKK", "passiv", "–", "S"], ["SBK", "hilf", "", "H"]],
+      merke: "Passives Konto: Der Saldo steht im Soll → Konto an SBK.",
+      fehler: "SBK an BKK. Merk dir: Abschluss ist immer die Gegenseite der Eröffnung." },
+    { id: "le1-21", datum: "31.12.",
+      text: "Abschluss: Die Geschäftsausstattung hat einen Schlussbestand von € 5.900,--.",
+      soll: [{ konto: "SBK", betrag: 5900 }], haben: [{ konto: "GA", betrag: 5900 }],
+      analyse: [["SBK", "hilf", "", "S"], ["GA", "aktiv", "–", "H"]],
+      merke: "Eröffnung GA an EBK, Abschluss SBK an GA. Genau umgekehrt.",
+      fehler: "GA an SBK, weil die Möbel „ins SBK gehen“. Das SBK bekommt → Soll." }
+  ]
+};
+
+</script>
+<script>
+/* LE 2 · Erfolgskonten, G&V, Personalaufwände
+   Eigene Texte und Zahlen. Grundlage: Folien LE 2 + Arbeitsblatt LE 2 (nur Inhalt). Ungeprüft bis Gegentest. */
+window.INHALT = window.INHALT || {};
+INHALT[2] = {
+  titel: "Erfolgskonten, G&V, Personal",
+  arten: ["aktiv", "passiv", "aufwand", "ertrag", "hilf"],
+  konten: ["MA", "WERBA", "TEA", "VA", "REPA", "ZA", "EAUF", "ZE", "ME", "PROVE", "G&V", "EK", "GA-ANG", "LA-ARB", "SV-DGA-ANG", "DB-ANG", "DZ-ANG", "KommSt-ANG", "VB-KK", "VB-FA", "VB-DN", "VB-GEM", "VA-SVA", "VB-SVA", "BGH", "KA", "LV"],
+  gegentest: "Löse das Arbeitsblatt zu LE 2 (Oliver, Willi, G&V-Abschluss, Richards Raumservice, Elisabeths Bauunternehmung, Marcels Lounge) und die Zusatzbeispiele zu LE 2 auf Papier, ohne App. Dann mit der offiziellen Lösung vergleichen.",
+  kannst: [
+    "Aufwände im Soll, Erträge im Haben buchen, Gegenkonto ist immer ein Bestandskonto",
+    "Erfolgskonten mit dem G&V-Konto abschliessen",
+    "Gewinn oder Verlust ins Eigenkapital umbuchen und den Erfolg direkt ermitteln",
+    "Bruttogehalt bzw. Bruttolohn mit SV-Dienstnehmeranteil, Lohnsteuer und Netto zusammengesetzt buchen",
+    "Lohnnebenkosten (SV-DGA, DB, DZ, KommSt) und die SV des Unternehmers buchen"
+  ],
+  abschnitte: [
+    {
+      titel: "Aufwände und Erträge",
+      inhalt: [
+        "In LE 1 hat sich das Eigenkapital nie verändert, weil nur Bestände umgeschichtet wurden. Jetzt kommt das, was ein Unternehmen ärmer oder reicher macht.",
+        { liste: [
+          "<b>Aufwand</b> = Verbrauch von Gütern oder Leistungen, macht ärmer. Beispiel: Miete fürs Geschäftslokal.",
+          "<b>Ertrag</b> = Einnahme für eine Leistung, macht reicher. Beispiel: Zinsen auf dem Bankguthaben."
+        ] },
+        "Eigentlich müsste man jede Miete direkt vom Eigenkapital abziehen (<i>EK an Kassa</i>). Das wäre unübersichtlich. Deshalb gibt es <b>Erfolgskonten</b>: Unterkonten des Eigenkapitals, eins pro Aufwands- oder Ertragsart.",
+        { satz: { soll: [["MA", 1500]], haben: [["KA", 1500]] } },
+        { merke: "Aufwände verringern das Eigenkapital, Erträge erhöhen es. Erfolgskonten sammeln das übers Jahr und geben es am 31.12. gebündelt ans Eigenkapital weiter." }
+      ],
+      check: {
+        frage: "Die Bank schreibt uns € 60,-- Zinsen gut. Was passiert mit dem Eigenkapital, wenn man es zu Ende denkt?",
+        optionen: ["Es steigt, weil ein Ertrag entsteht", "Es sinkt", "Nichts, nur die Bank steigt"],
+        richtig: 0,
+        erklaerung: "Zinserträge machen das Unternehmen reicher. Gebucht wird BGH an ZE, und über das G&V-Konto landet der Ertrag am Jahresende im Eigenkapital."
+      }
+    },
+    {
+      titel: "Die Buchungsregeln",
+      inhalt: [
+        { liste: ["<b>Aufwandskonten</b>: Aufwände stehen im <b>Soll</b>", "<b>Ertragskonten</b>: Erträge stehen im <b>Haben</b>"] },
+        "Das Gegenkonto ist immer ein Bestandskonto (Kassa, Bank, Lieferverbindlichkeiten …). Die 4 Fragen bleiben gleich, nur bei Frage 2 gibt es jetzt vier Antworten: aktiv, passiv, Aufwand oder Ertrag.",
+        "Beispiel: Wir bekommen eine Provision von € 900,-- aufs Bankkonto.",
+        { fragen: [["BGH", "aktiv", "+", "S"], ["PROVE", "ertrag", "+", "H"]] },
+        { satz: { soll: [["BGH", 900]], haben: [["PROVE", 900]] } },
+        { merke: "Erfolgskonten werden am 1.1. <b>nicht</b> mit dem EBK eröffnet. Sie starten jedes Jahr bei null." }
+      ],
+      check: {
+        frage: "Wir zahlen die Telefonrechnung von € 80,-- per Bank. Welcher Buchungssatz?",
+        optionen: ["Telefonaufwände an Bankguthaben", "Bankguthaben an Telefonaufwände", "Eigenkapital an Telefonaufwände"],
+        richtig: 0,
+        erklaerung: "Aufwand → Soll. Das Geld geht von der Bank weg → BGH im Haben."
+      }
+    },
+    {
+      titel: "Die wichtigsten Erfolgskonten",
+      inhalt: [
+        "Diese Konten brauchst du ständig (Kürzel laut Kontenplan):",
+        { liste: [
+          "<b>Aufwände:</b> MA Mietaufwände · WERBA Werbeaufwände · TEA Telefonaufwände · VA Versicherungsaufwände · REPA Reparaturaufwände · ZA Zinsaufwände · EAUF Energieaufwände",
+          "<b>Erträge:</b> ZE Zinserträge · ME Mieterträge · PROVE Provisionserträge"
+        ] },
+        { merke: "Zinsen gibt es in beide Richtungen: Zahlen wir Zinsen für einen Kredit → <b>ZA</b> (Aufwand). Bekommen wir Zinsen auf unser Guthaben → <b>ZE</b> (Ertrag). Gleiches bei Miete: Wir zahlen → MA, wir vermieten → ME." }
+      ],
+      check: {
+        frage: "Wir vermieten einen Lagerraum, der Mieter überweist € 400,--. Welches Erfolgskonto?",
+        optionen: ["Mieterträge (ME)", "Mietaufwände (MA)", "Provisionserträge (PROVE)"],
+        richtig: 0,
+        erklaerung: "Wir bekommen Geld für eine Leistung → Ertrag → ME im Haben. Buchungssatz: BGH an ME 400,--."
+      }
+    },
+    {
+      titel: "Abschluss mit dem G&V-Konto",
+      inhalt: [
+        "Am 31.12. werden alle Erfolgskonten mit dem <b>Gewinn- und Verlustkonto (G&V)</b> abgeschlossen, einem Hilfskonto wie SBK.",
+        { liste: ["Aufwandskonto: <b>G&V an Aufwandskonto</b>", "Ertragskonto: <b>Ertragskonto an G&V</b>"] },
+        "So landen alle Aufwände links und alle Erträge rechts im G&V-Konto:",
+        { tkonten: [
+          { name: "Mietaufwände", soll: [["BGH", 2800]], haben: [["G&V", 2800]] },
+          { name: "G&V", soll: [["MA", 2800], ["WERBA", 1200]], haben: [["PROVE", 6500], ["ZE", 900]] }
+        ] },
+        { merke: "Das G&V-Konto ist wie das SBK, nur für Erfolgskonten: SBK sammelt die Bestände, G&V sammelt Aufwände und Erträge." }
+      ],
+      check: {
+        frage: "Abschluss: Die Werbeaufwände haben einen Saldo von € 1.200,--. Welcher Buchungssatz?",
+        optionen: ["G&V an Werbeaufwände 1.200,--", "Werbeaufwände an G&V 1.200,--", "SBK an Werbeaufwände 1.200,--"],
+        richtig: 0,
+        erklaerung: "Aufwände stehen im Soll, der Saldo also im Haben des Aufwandskontos. Gegenkonto G&V im Soll."
+      }
+    },
+    {
+      titel: "Gewinn oder Verlust",
+      inhalt: [
+        "Im G&V-Konto stehen jetzt alle Aufwände (Soll) und alle Erträge (Haben). Der Saldo ist der <b>Erfolg</b>. Er wird ins Eigenkapital umgebucht:",
+        { liste: [
+          "<b>Gewinn</b> (Erträge > Aufwände): Saldo steht im Soll des G&V → <b>G&V an EK</b>",
+          "<b>Verlust</b> (Aufwände > Erträge): Saldo steht im Haben des G&V → <b>EK an G&V</b>"
+        ] },
+        "Mit den Zahlen von oben: Erträge 7.400 − Aufwände 4.000 = Gewinn 3.400:",
+        { satz: { soll: [["G&V", 3400]], haben: [["EK", 3400]] } },
+        "Erst danach wird das Eigenkapital mit dem SBK abgeschlossen. Diese Rechnung (Erträge − Aufwände) heisst <b>direkte Erfolgsermittlung</b>.",
+        { merke: "Reihenfolge am 31.12.: Erfolgskonten → G&V, dann G&V → EK, dann EK → SBK. Wer EK zu früh abschliesst, vergisst den Gewinn." }
+      ],
+      check: {
+        frage: "Aufwände gesamt € 12.000,--, Erträge gesamt € 10.500,--. Welche Buchung?",
+        optionen: ["EK an G&V 1.500,--", "G&V an EK 1.500,--", "G&V an EK 10.500,--"],
+        richtig: 0,
+        erklaerung: "Aufwände sind grösser → Verlust von 1.500. Das Eigenkapital sinkt → EK im Soll."
+      }
+    },
+    {
+      titel: "Gehälter und Löhne",
+      inhalt: [
+        "Angestellte bekommen <b>Gehälter</b>, Arbeiter <b>Löhne</b>. Für das Unternehmen ist das <b>Bruttogehalt</b> der Aufwand. Davon gehen aber nur Teile an den Mitarbeiter:",
+        { liste: [
+          "SV-Dienstnehmeranteil → schulden wir der Krankenkasse (<b>VB-KK</b>)",
+          "Lohnsteuer → schulden wir dem Finanzamt (<b>VB-FA</b>)",
+          "Netto → schulden wir dem Mitarbeiter (<b>VB-DN</b>)"
+        ] },
+        "Beispiel: Bruttogehälter 10.000, SV-DNA 1.800, Lohnsteuer 1.200, Netto 7.000 (Monatsanfang):",
+        { satz: { soll: [["GA-ANG", 10000]], haben: [["VB-KK", 1800], ["VB-FA", 1200], ["VB-DN", 7000]] } },
+        "Bezahlt wird später, jeweils <b>Verbindlichkeit an Bankguthaben</b>: Netto z. B. am 8., Krankenkasse und Finanzamt am 15. des Folgemonats.",
+        { merke: "Achtung Verwechslungsgefahr: <b>GA-ANG</b> = Gehaltsaufwände Angestellte. <b>GA</b> = Geschäftsausstattung. Für Arbeiter heisst das Konto <b>LA-ARB</b> (Lohnaufwände)." }
+      ],
+      check: {
+        frage: "Wir überweisen den Angestellten ihre Nettogehälter. Welcher Buchungssatz?",
+        optionen: ["VB-DN an BGH", "GA-ANG an BGH", "BGH an VB-DN"],
+        richtig: 0,
+        erklaerung: "Der Aufwand wurde schon am Monatsanfang gebucht. Jetzt wird nur die Schuld gegenüber den Dienstnehmern bezahlt: VB-DN im Soll, Bank im Haben."
+      }
+    },
+    {
+      titel: "Lohnnebenkosten und der Unternehmer",
+      inhalt: [
+        "Zusätzlich zum Brutto zahlt der Arbeitgeber eigene Abgaben. Jede bekommt ein eigenes Aufwandskonto (getrennt für Angestellte -ANG und Arbeiter -ARB):",
+        { liste: [
+          "SV-Dienstgeberanteil: <b>SV-DGA-ANG an VB-KK</b>",
+          "Dienstgeberbeitrag: <b>DB-ANG an VB-FA</b>",
+          "Zuschlag zum DB: <b>DZ-ANG an VB-FA</b>",
+          "Kommunalsteuer: <b>KommSt-ANG an VB-GEM</b> (Gemeinde)"
+        ] },
+        "Der <b>Unternehmer selbst</b> bekommt kein Gehalt. Was er sich auszahlt, ist eine Privatentnahme (kommt in LE 3). Seine eigene Sozialversicherung wird vierteljährlich vorgeschrieben:",
+        { satz: { soll: [["VA-SVA", 1400]], haben: [["VB-SVA", 1400]] } },
+        { merke: "Die Beträge (SV, Lohnsteuer, DB …) stehen in der Prüfung immer in der Angabe. Du musst sie nicht ausrechnen, nur richtig zuordnen." }
+      ],
+      check: {
+        frage: "Die Kommunalsteuer für Angestellte beträgt € 360,--. Welcher Buchungssatz?",
+        optionen: ["KommSt-ANG an VB-GEM", "KommSt-ANG an VB-FA", "VB-GEM an KommSt-ANG"],
+        richtig: 0,
+        erklaerung: "Kommunalsteuer bekommt die Gemeinde, nicht das Finanzamt. Aufwand im Soll, Verbindlichkeit Gemeinde im Haben."
+      }
+    }
+  ],
+  faelle: [
+    { id: "le2-01", gefuehrt: true, datum: "3.2.", text: "Wir überweisen die Miete für das Geschäftslokal, € 1.800,--.",
+      soll: [{ konto: "MA", betrag: 1800 }], haben: [{ konto: "BGH", betrag: 1800 }],
+      analyse: [["MA", "aufwand", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Aufwand im Soll, Geld geht weg → Bank im Haben.", fehler: "MA ins Haben, weil „wir zahlen ja“. Aufwände stehen immer im Soll." },
+    { id: "le2-02", datum: "5.2.", text: "Wir bezahlen ein Werbeinserat in der Lokalzeitung bar, € 450,--.",
+      soll: [{ konto: "WERBA", betrag: 450 }], haben: [{ konto: "KA", betrag: 450 }],
+      analyse: [["WERBA", "aufwand", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Werbung ist ein Aufwand, auch wenn sie später Kunden bringt.", fehler: "Werbung als Vermögen sehen. Ein Inserat besitzt man nicht." },
+    { id: "le2-03", gefuehrt: true, datum: "12.2.", text: "Die Bank schreibt unserem Bankguthaben Zinsen gut, € 85,--.",
+      soll: [{ konto: "BGH", betrag: 85 }], haben: [{ konto: "ZE", betrag: 85 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["ZE", "ertrag", "+", "H"]],
+      merke: "Erträge stehen im Haben, das Geld kommt aufs Bankkonto (Soll).", fehler: "ZA statt ZE. Wir bekommen Zinsen → Ertrag." },
+    { id: "le2-04", datum: "20.2.", text: "Für die Vermittlung eines Geschäfts erhalten wir eine Provision auf unser Bankkonto, € 1.200,--.",
+      soll: [{ konto: "BGH", betrag: 1200 }], haben: [{ konto: "PROVE", betrag: 1200 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["PROVE", "ertrag", "+", "H"]],
+      merke: "Provision bekommen = Provisionsertrag.", fehler: "PROVA (Aufwand) gewählt. Wer bekommt, hat einen Ertrag." },
+    { id: "le2-05", datum: "1.3.", text: "Die Telefonrechnung wird vom Bankkonto abgebucht, € 96,--.",
+      soll: [{ konto: "TEA", betrag: 96 }], haben: [{ konto: "BGH", betrag: 96 }],
+      analyse: [["TEA", "aufwand", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Im Kontenplan heisst das Konto TEA (Telefonaufwände).", fehler: "Seiten vertauscht. Aufwand immer Soll." },
+    { id: "le2-06", datum: "10.3.", text: "Ein Techniker repariert unseren Drucker. Wir zahlen bar, € 230,--.",
+      soll: [{ konto: "REPA", betrag: 230 }], haben: [{ konto: "KA", betrag: 230 }],
+      analyse: [["REPA", "aufwand", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Reparatur erhält Vermögen, schafft aber kein neues → Aufwand.", fehler: "Die Reparatur auf BMAS buchen. Der Drucker wird dadurch nicht mehr wert." },
+    { id: "le2-07", datum: "15.3.", text: "Wir vermieten einen Lagerraum. Der Mieter überweist die Monatsmiete, € 600,--.",
+      soll: [{ konto: "BGH", betrag: 600 }], haben: [{ konto: "ME", betrag: 600 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["ME", "ertrag", "+", "H"]],
+      merke: "Wir vermieten → Mieterträge. Wir mieten → Mietaufwände.", fehler: "MA statt ME. Frag: Fliesst das Geld rein oder raus?" },
+    { id: "le2-08", datum: "2.4.", text: "Die Betriebsversicherung wird per Banküberweisung bezahlt, € 1.140,--.",
+      soll: [{ konto: "VA", betrag: 1140 }], haben: [{ konto: "BGH", betrag: 1140 }],
+      analyse: [["VA", "aufwand", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Versicherungen sind Aufwände (VA).", fehler: "VA-SVA gewählt. Das ist nur die Sozialversicherung des Unternehmers." },
+    { id: "le2-09", datum: "30.4.", text: "Die Bank bucht Kreditzinsen von unserem Bankguthaben ab, € 310,--.",
+      soll: [{ konto: "ZA", betrag: 310 }], haben: [{ konto: "BGH", betrag: 310 }],
+      analyse: [["ZA", "aufwand", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Zinsen zahlen = Zinsaufwand.", fehler: "ZE gewählt, weil „Bank“ und „Zinsen“ vorkommen. Hier zahlen wir." },
+    { id: "le2-10", datum: "14.5.", text: "Wir erhalten die Stromrechnung, zahlbar in 30 Tagen, € 380,--.",
+      soll: [{ konto: "EAUF", betrag: 380 }], haben: [{ konto: "LV", betrag: 380 }],
+      analyse: [["EAUF", "aufwand", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Rechnung erhalten, noch nicht bezahlt → Lieferverbindlichkeit.", fehler: "BGH statt LV. Es fliesst noch kein Geld." },
+    { id: "le2-11", gefuehrt: true, datum: "1.6.", text: "Gehaltsabrechnung Angestellte: Bruttogehälter € 12.400,--, SV-Dienstnehmeranteil € 2.250,--, Lohnsteuer € 1.680,--, Nettogehälter € 8.470,--.",
+      soll: [{ konto: "GA-ANG", betrag: 12400 }], haben: [{ konto: "VB-KK", betrag: 2250 }, { konto: "VB-FA", betrag: 1680 }, { konto: "VB-DN", betrag: 8470 }],
+      analyse: [["GA-ANG", "aufwand", "+", "S"], ["VB-KK", "passiv", "+", "H"], ["VB-FA", "passiv", "+", "H"], ["VB-DN", "passiv", "+", "H"]],
+      merke: "Das Brutto ist der Aufwand. Es verteilt sich auf drei Schulden: Krankenkasse, Finanzamt, Mitarbeiter.", fehler: "Nur das Netto als Aufwand buchen. Aufwand ist immer das Brutto." },
+    { id: "le2-12", datum: "8.6.", text: "Wir überweisen den Angestellten die Nettogehälter, € 8.470,--.",
+      soll: [{ konto: "VB-DN", betrag: 8470 }], haben: [{ konto: "BGH", betrag: 8470 }],
+      analyse: [["VB-DN", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Der Aufwand ist schon gebucht. Jetzt wird nur die Schuld bezahlt.", fehler: "GA-ANG nochmal buchen. Dann wäre der Aufwand doppelt." },
+    { id: "le2-13", datum: "1.6.", text: "Gehaltsnebenkosten: SV-Dienstgeberanteil für die Angestellten, € 2.720,--.",
+      soll: [{ konto: "SV-DGA-ANG", betrag: 2720 }], haben: [{ konto: "VB-KK", betrag: 2720 }],
+      analyse: [["SV-DGA-ANG", "aufwand", "+", "S"], ["VB-KK", "passiv", "+", "H"]],
+      merke: "Dienstgeberanteil = Aufwand des Unternehmens, Schuld bei der Krankenkasse.", fehler: "VB-FA statt VB-KK. Sozialversicherung geht an die Krankenkasse." },
+    { id: "le2-14", datum: "1.6.", text: "Gehaltsnebenkosten: Dienstgeberbeitrag (DB) für die Angestellten, € 484,--.",
+      soll: [{ konto: "DB-ANG", betrag: 484 }], haben: [{ konto: "VB-FA", betrag: 484 }],
+      analyse: [["DB-ANG", "aufwand", "+", "S"], ["VB-FA", "passiv", "+", "H"]],
+      merke: "DB und DZ gehen ans Finanzamt.", fehler: "VB-GEM gewählt. Die Gemeinde bekommt nur die Kommunalsteuer." },
+    { id: "le2-15", datum: "1.6.", text: "Gehaltsnebenkosten: Kommunalsteuer für die Angestellten, € 372,--.",
+      soll: [{ konto: "KommSt-ANG", betrag: 372 }], haben: [{ konto: "VB-GEM", betrag: 372 }],
+      analyse: [["KommSt-ANG", "aufwand", "+", "S"], ["VB-GEM", "passiv", "+", "H"]],
+      merke: "Kommunalsteuer → Gemeinde (VB-GEM).", fehler: "VB-FA gewählt, weil „Steuer“ im Namen steht." },
+    { id: "le2-16", datum: "15.7.", text: "Wir überweisen der Krankenkasse SV-Dienstnehmer- und Dienstgeberanteil für Juni zusammen, € 4.970,--.",
+      soll: [{ konto: "VB-KK", betrag: 4970 }], haben: [{ konto: "BGH", betrag: 4970 }],
+      analyse: [["VB-KK", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Beide Anteile stehen auf derselben Verbindlichkeit (2.250 + 2.720).", fehler: "SV-DGA-ANG nochmal buchen. Der Aufwand wurde am 1.6. erfasst." },
+    { id: "le2-17", datum: "1.8.", text: "Lohnabrechnung Arbeiter: Bruttolöhne € 9.600,--, SV-Dienstnehmeranteil € 1.740,--, Lohnsteuer € 820,--, Nettolöhne € 7.040,--.",
+      soll: [{ konto: "LA-ARB", betrag: 9600 }], haben: [{ konto: "VB-KK", betrag: 1740 }, { konto: "VB-FA", betrag: 820 }, { konto: "VB-DN", betrag: 7040 }],
+      analyse: [["LA-ARB", "aufwand", "+", "S"], ["VB-KK", "passiv", "+", "H"], ["VB-FA", "passiv", "+", "H"], ["VB-DN", "passiv", "+", "H"]],
+      merke: "Gleiches Schema wie bei Gehältern, nur mit LA-ARB.", fehler: "GA-ANG für Arbeiter. Arbeiter → Löhne → LA-ARB." },
+    { id: "le2-18", datum: "1.11.", text: "Vorschreibung der Sozialversicherung für den Unternehmer selbst, € 1.480,--.",
+      soll: [{ konto: "VA-SVA", betrag: 1480 }], haben: [{ konto: "VB-SVA", betrag: 1480 }],
+      analyse: [["VA-SVA", "aufwand", "+", "S"], ["VB-SVA", "passiv", "+", "H"]],
+      merke: "Vorschreibung = Schuld entsteht, gezahlt wird später.", fehler: "Sofort an BGH buchen. Die Vorschreibung ist noch keine Zahlung." },
+    { id: "le2-19", gefuehrt: true, datum: "31.12.", text: "Abschluss: Das Konto Mietaufwände hat einen Saldo von € 21.600,--.",
+      soll: [{ konto: "G&V", betrag: 21600 }], haben: [{ konto: "MA", betrag: 21600 }],
+      analyse: [["G&V", "hilf", "", "S"], ["MA", "aufwand", "–", "H"]],
+      merke: "Aufwandskonto: G&V an Konto.", fehler: "SBK statt G&V. Erfolgskonten gehen immer ins G&V." },
+    { id: "le2-20", datum: "31.12.", text: "Abschluss: Das Konto Zinserträge hat einen Saldo von € 340,--.",
+      soll: [{ konto: "ZE", betrag: 340 }], haben: [{ konto: "G&V", betrag: 340 }],
+      analyse: [["ZE", "ertrag", "–", "S"], ["G&V", "hilf", "", "H"]],
+      merke: "Ertragskonto: Konto an G&V.", fehler: "G&V an ZE. Das wäre der Abschluss eines Aufwandskontos." },
+    { id: "le2-21", gefuehrt: true, datum: "31.12.", text: "Das G&V-Konto zeigt: Erträge € 58.300,--, Aufwände € 44.050,--. Buche den Erfolg ins Eigenkapital.",
+      soll: [{ konto: "G&V", betrag: 14250 }], haben: [{ konto: "EK", betrag: 14250 }],
+      analyse: [["G&V", "hilf", "", "S"], ["EK", "passiv", "+", "H"]],
+      merke: "58.300 − 44.050 = 14.250 Gewinn. Gewinn erhöht das Eigenkapital → EK im Haben.", fehler: "Die Erträge statt des Saldos umbuchen." },
+    { id: "le2-22", datum: "31.12.", text: "Das G&V-Konto zeigt: Aufwände € 27.400,--, Erträge € 24.300,--. Buche den Erfolg ins Eigenkapital.",
+      soll: [{ konto: "EK", betrag: 3100 }], haben: [{ konto: "G&V", betrag: 3100 }],
+      analyse: [["EK", "passiv", "–", "S"], ["G&V", "hilf", "", "H"]],
+      merke: "Verlust von 3.100: Das Eigenkapital sinkt → EK im Soll.", fehler: "Aus Gewohnheit G&V an EK. Erst prüfen: Gewinn oder Verlust?" }
+  ]
+};
+
+</script>
+<script>
+/* LE 3 · Warenkonten, Konto Privat
+   Eigene Texte und Zahlen. Grundlage: Folien LE 3 + Arbeitsblatt LE 3 (nur Inhalt). Ungeprüft bis Gegentest. */
+window.INHALT = window.INHALT || {};
+INHALT[3] = {
+  titel: "Warenkonten, Konto Privat",
+  arten: ["aktiv", "passiv", "aufwand", "ertrag", "sonder", "hilf"],
+  konten: ["WV", "WES", "WE", "PRIV", "EV", "EK", "G&V", "SBK", "KA", "BGH", "LF", "LV", "GA", "PKW"],
+  gegentest: "Löse das Arbeitsblatt zu LE 3 (Rainer, Christians Accessoires mit Unterschiedsbetrag, Urs mit Konto Privat) und die Zusatzbeispiele zu LE 3 auf Papier, ohne App. Dann mit der offiziellen Lösung vergleichen.",
+  kannst: [
+    "Wareneinkäufe auf Wareneinsatz (WES) und Warenverkäufe auf Warenerträge (WE) buchen",
+    "Den Unterschiedsbetrag aus Inventur berechnen und richtig buchen",
+    "Die drei Warenkonten in der richtigen Reihenfolge abschliessen",
+    "Privatentnahmen und Privateinlagen (Geld, Anlagen, Waren) buchen",
+    "Das Konto Privat abschliessen und den Erfolg indirekt ermitteln"
+  ],
+  abschnitte: [
+    {
+      titel: "Waren einkaufen und verkaufen",
+      inhalt: [
+        "Im Kurs gilt: Wareneinkäufe kommen <b>nicht</b> auf Warenvorräte, sondern direkt auf das Aufwandskonto <b>Wareneinsatz (WES)</b>. Verkäufe kommen auf das Ertragskonto <b>Warenerträge (WE)</b>.",
+        { liste: ["Einkauf: <b>WES an KA / BGH / LV</b>", "Verkauf: <b>KA / BGH / LF an WE</b>"] },
+        "Warum nicht einfach Verkäufe im Haben von WES? Weil wir zum <b>Einkaufspreis</b> einkaufen und zum höheren <b>Verkaufspreis</b> verkaufen. Beides auf einem Konto würde den Unterschied verwischen.",
+        "Beispiel: 20 Rucksäcke à € 40,-- auf Ziel gekauft, 5 davon à € 90,-- bar verkauft:",
+        { satz: { soll: [["WES", 800]], haben: [["LV", 800]] } },
+        { satz: { soll: [["KA", 450]], haben: [["WE", 450]] } },
+        { merke: "Einkauf → WES (Aufwand, Soll). Verkauf → WE (Ertrag, Haben). Das Konto Warenvorräte fasst du während des Jahres nicht an." }
+      ],
+      check: {
+        frage: "Wir kaufen Waren um € 2.000,-- auf Ziel. Welcher Buchungssatz?",
+        optionen: ["WES an LV 2.000,--", "WV an LV 2.000,--", "LV an WES 2.000,--"],
+        richtig: 0,
+        erklaerung: "Im Kurs werden Einkäufe direkt als Aufwand auf WES gebucht. WV bleibt bis zum Jahresende ruhend."
+      }
+    },
+    {
+      titel: "Inventur und Unterschiedsbetrag",
+      inhalt: [
+        "Warenvorräte (WV) ist ein <b>ruhendes Konto</b>: Da steht das ganze Jahr nur der Anfangsbestand. Am 31.12. wird gezählt (Inventur) und WV an den echten Schlussbestand angepasst:",
+        { liste: ["Schlussbestand laut Inventur", "− Anfangsbestand", "= <b>Unterschiedsbetrag</b>"], nummer: false },
+        { liste: [
+          "Lager ist <b>gesunken</b> (Lagerabnahme): <b>WES an WV</b>. Wir haben mehr verbraucht als eingekauft.",
+          "Lager ist <b>gestiegen</b> (Lagerzunahme): <b>WV an WES</b>. Ein Teil der Einkäufe liegt noch im Lager."
+        ] },
+        "Beispiel: AB 12.000, SB laut Inventur 9.800 → Unterschied −2.200 (Abnahme):",
+        { satz: { soll: [["WES", 2200]], haben: [["WV", 2200]] } },
+        { merke: "Der Wareneinsatz ist danach der Wert der <b>verkauften</b> Waren zu Einkaufspreisen. Der Schlussbestand ist in der Prüfung immer angegeben." }
+      ],
+      check: {
+        frage: "Anfangsbestand Waren € 15.000,--, Schlussbestand laut Inventur € 18.500,--. Welche Buchung?",
+        optionen: ["WV an WES 3.500,--", "WES an WV 3.500,--", "WV an WES 18.500,--"],
+        richtig: 0,
+        erklaerung: "18.500 − 15.000 = +3.500, das Lager ist gestiegen. Warenvorräte (aktiv) nehmen zu → Soll."
+      }
+    },
+    {
+      titel: "Die drei Warenkonten abschliessen",
+      inhalt: [
+        "Nach der Unterschiedsbetragsbuchung werden die drei Konten abgeschlossen:",
+        { liste: [
+          "Wareneinsatz (Aufwand): <b>G&V an WES</b>",
+          "Warenerträge (Ertrag): <b>WE an G&V</b>",
+          "Warenvorräte (aktiv): <b>SBK an WV</b> mit genau dem Inventurwert"
+        ] },
+        { tkonten: [
+          { name: "Warenvorräte", soll: [["EBK", 12000]], haben: [["WES", 2200], ["SBK", 9800]], summe: 12000 },
+          { name: "Wareneinsatz", soll: [["LV", 4000], ["WV", 2200]], haben: [["G&V", 6200]], summe: 6200 }
+        ] },
+        "Warenerträge minus Wareneinsatz heisst <b>Roherfolg</b>. Erst nach Abzug aller anderen Aufwände kommt der Reingewinn.",
+        { merke: "Reihenfolge ist Pflicht: zuerst Unterschiedsbetrag, dann SBK an WV. Sonst stimmt der Schlussbestand nicht." }
+      ],
+      check: {
+        frage: "Warenerträge € 9.000,--, Wareneinsatz € 6.200,--. Wie hoch ist der Roherfolg?",
+        optionen: ["Rohgewinn 2.800,--", "Rohgewinn 15.200,--", "Rohverlust 2.800,--"],
+        richtig: 0,
+        erklaerung: "9.000 − 6.200 = 2.800. Erträge grösser als Einsatz → Rohgewinn."
+      }
+    },
+    {
+      titel: "Das Konto Privat",
+      inhalt: [
+        "Der Unternehmer und sein Unternehmen sind buchhalterisch zwei Paar Schuhe. Geld oder Sachen, die zwischen beiden fliessen, laufen über das <b>Konto Privat (PRIV)</b>, ein Unterkonto des Eigenkapitals.",
+        { liste: [
+          "Privatentnahme Geld: <b>PRIV an KA / BGH</b>",
+          "Privateinlage Geld: <b>KA / BGH an PRIV</b>",
+          "Privateinlage Anlage (z. B. privates Auto): <b>PKW an PRIV</b>",
+          "Privatentnahme Waren: <b>PRIV an EV</b> (Eigenverbrauch, ein Ertragskonto), bewertet zum Einstandspreis"
+        ] },
+        "Bei den 4 Fragen ist Privat ein <b>Sonderkonto</b>: Zugang oder Abgang entfällt, du gibst nur die Seite an. Entnahme → Soll, Einlage → Haben.",
+        { fragen: [["PRIV", "sonder", "", "S"], ["KA", "aktiv", "–", "H"]] },
+        { merke: "Einen Unternehmerlohn gibt es nicht. Was sich der Unternehmer monatlich auszahlt, ist eine Privatentnahme, also kein Aufwand." }
+      ],
+      check: {
+        frage: "Die Unternehmerin legt € 3.000,-- von ihrem privaten Sparbuch aufs Geschäftskonto. Welcher Buchungssatz?",
+        optionen: ["BGH an PRIV 3.000,--", "PRIV an BGH 3.000,--", "BGH an EK 3.000,--"],
+        richtig: 0,
+        erklaerung: "Einlage: Das Unternehmen bekommt Geld → BGH im Soll, Privat im Haben."
+      }
+    },
+    {
+      titel: "Privat abschliessen und Erfolg indirekt",
+      inhalt: [
+        "Am 31.12. wird Privat mit dem Eigenkapital abgeschlossen, <b>nach</b> dem G&V-Konto:",
+        { liste: ["Entnahmen > Einlagen: <b>EK an PRIV</b> (Eigenkapital sinkt)", "Einlagen > Entnahmen: <b>PRIV an EK</b> (Eigenkapital steigt)"] },
+        "Entnahmen machen das Eigenkapital kleiner, aber nicht den Gewinn. Deshalb rechnet man bei der <b>indirekten Erfolgsermittlung</b> zurück:",
+        { liste: ["Eigenkapital Ende", "− Eigenkapital Anfang", "= Zwischenbetrag", "+ Privatentnahmen", "− Privateinlagen", "= <b>Erfolg</b>"] },
+        { merke: "Direkte (Erträge − Aufwände) und indirekte Methode müssen denselben Erfolg ergeben. Gute Selbstkontrolle in der Prüfung." }
+      ],
+      check: {
+        frage: "EK Anfang 40.000, EK Ende 46.500, Entnahmen 1.200, Einlagen 3.000. Wie hoch ist der Gewinn?",
+        optionen: ["4.700,--", "6.500,--", "10.700,--"],
+        richtig: 0,
+        erklaerung: "46.500 − 40.000 = 6.500; + 1.200 − 3.000 = 4.700."
+      }
+    },
+    {
+      titel: "Keine Buchung ohne Beleg",
+      inhalt: [
+        "Jede Buchung braucht einen Beleg: Rechnung, Kassabon, Kontoauszug oder ein Eigenbeleg (z. B. Lohnabrechnung, Privatentnahme). In Angaben stehen oft Belegsymbole:",
+        { liste: ["<b>A</b> Ausgangsrechnung (Verkauf auf Ziel) · <b>E</b> Eingangsrechnung (Einkauf auf Ziel)", "<b>B</b> Bankguthaben · <b>BK</b> Bankkredit · <b>K</b> Kassa · <b>D</b> Darlehen", "<b>S</b> Sonstige: Privatentnahmen, Lohnabrechnungen, Rücksendungen"] },
+        { merke: "Das Symbol verrät oft schon ein Konto: „B 12“ → Bankguthaben, „K 3“ → Kassa, „E 7“ → auf Ziel gekauft (LV)." }
+      ],
+      check: {
+        frage: "Angabe: „E 14 Wareneinkauf, € 1.800,--“. Welcher Buchungssatz ist gemeint?",
+        optionen: ["WES an LV 1.800,--", "WES an KA 1.800,--", "LF an WE 1.800,--"],
+        richtig: 0,
+        erklaerung: "E = Eingangsrechnung, also Einkauf auf Ziel → Lieferverbindlichkeit."
+      }
+    }
+  ],
+  faelle: [
+    { id: "le3-01", gefuehrt: true, datum: "4.1.", text: "Wir kaufen Waren auf Ziel, € 3.600,--.",
+      soll: [{ konto: "WES", betrag: 3600 }], haben: [{ konto: "LV", betrag: 3600 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Wareneinkauf → Wareneinsatz (Aufwand).", fehler: "WV statt WES. Warenvorräte ruhen das ganze Jahr." },
+    { id: "le3-02", gefuehrt: true, datum: "9.1.", text: "Wir verkaufen Waren bar, € 1.250,--.",
+      soll: [{ konto: "KA", betrag: 1250 }], haben: [{ konto: "WE", betrag: 1250 }],
+      analyse: [["KA", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"]],
+      merke: "Warenverkauf → Warenerträge im Haben.", fehler: "KA an WES. Verkäufe nie auf das Einsatzkonto." },
+    { id: "le3-03", datum: "16.1.", text: "Wir kaufen Waren und zahlen bar, € 840,--.",
+      soll: [{ konto: "WES", betrag: 840 }], haben: [{ konto: "KA", betrag: 840 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Ob bar oder auf Ziel: Der Einkauf geht immer auf WES.", fehler: "Seiten vertauscht." },
+    { id: "le3-04", datum: "22.1.", text: "Wir verkaufen Waren auf Ziel, € 4.300,--.",
+      soll: [{ konto: "LF", betrag: 4300 }], haben: [{ konto: "WE", betrag: 4300 }],
+      analyse: [["LF", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"]],
+      merke: "Verkauf auf Ziel → Lieferforderung entsteht.", fehler: "LV statt LF. Der Kunde schuldet uns." },
+    { id: "le3-05", datum: "3.2.", text: "Ein Kunde kauft Waren und überweist sofort, € 2.900,--.",
+      soll: [{ konto: "BGH", betrag: 2900 }], haben: [{ konto: "WE", betrag: 2900 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"]],
+      merke: "Sofortige Zahlung → keine Forderung, direkt Bank.", fehler: "LF gebucht, obwohl schon bezahlt ist." },
+    { id: "le3-06", datum: "11.2.", text: "Wir kaufen Waren und bezahlen per Banküberweisung, € 5.100,--.",
+      soll: [{ konto: "WES", betrag: 5100 }], haben: [{ konto: "BGH", betrag: 5100 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Einkauf → WES, Geld geht weg → BGH im Haben.", fehler: "WV im Soll." },
+    { id: "le3-07", datum: "2.3.", text: "Der Kunde vom 22.1. überweist seine Rechnung, € 4.300,--.",
+      soll: [{ konto: "BGH", betrag: 4300 }], haben: [{ konto: "LF", betrag: 4300 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["LF", "aktiv", "–", "H"]],
+      merke: "Der Verkauf ist schon gebucht. Jetzt wird nur die Forderung zu Geld.", fehler: "Nochmal WE buchen. Dann wäre der Umsatz doppelt." },
+    { id: "le3-08", datum: "8.3.", text: "Wir bezahlen die Lieferantenrechnung vom 4.1. per Bank, € 3.600,--.",
+      soll: [{ konto: "LV", betrag: 3600 }], haben: [{ konto: "BGH", betrag: 3600 }],
+      analyse: [["LV", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Schuld zahlen: LV an BGH. Kein WES mehr.", fehler: "WES an BGH. Der Einkauf ist längst gebucht." },
+    { id: "le3-09", gefuehrt: true, datum: "5.4.", text: "Die Unternehmerin nimmt € 500,-- Bargeld aus der Geschäftskassa für private Zwecke.",
+      soll: [{ konto: "PRIV", betrag: 500 }], haben: [{ konto: "KA", betrag: 500 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Privatentnahme → Privat im Soll.", fehler: "Als Aufwand buchen. Private Ausgaben sind nie Aufwand des Unternehmens." },
+    { id: "le3-10", datum: "12.4.", text: "Der Unternehmer überweist sich € 1.200,-- vom Geschäftskonto für seinen Urlaub.",
+      soll: [{ konto: "PRIV", betrag: 1200 }], haben: [{ konto: "BGH", betrag: 1200 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Urlaub ist privat → Privatentnahme.", fehler: "EK direkt im Soll. Während des Jahres läuft alles über PRIV." },
+    { id: "le3-11", gefuehrt: true, datum: "20.5.", text: "Die Unternehmerin legt € 6.000,-- von ihrem privaten Sparbuch auf das Geschäftskonto.",
+      soll: [{ konto: "BGH", betrag: 6000 }], haben: [{ konto: "PRIV", betrag: 6000 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["PRIV", "sonder", "", "H"]],
+      merke: "Privateinlage → Privat im Haben.", fehler: "Als Ertrag buchen (ÜBE). Eine Einlage ist kein Gewinn." },
+    { id: "le3-12", datum: "3.6.", text: "Der Unternehmer bringt seinen privaten Schreibtisch ins Büro ein, Wert € 700,--.",
+      soll: [{ konto: "GA", betrag: 700 }], haben: [{ konto: "PRIV", betrag: 700 }],
+      analyse: [["GA", "aktiv", "+", "S"], ["PRIV", "sonder", "", "H"]],
+      merke: "Sacheinlage: Das Unternehmen bekommt Vermögen, Privat im Haben.", fehler: "KA an PRIV. Es fliesst kein Geld, sondern ein Möbelstück." },
+    { id: "le3-13", datum: "18.6.", text: "Die Unternehmerin legt ihren privaten PKW ins Unternehmen ein, Wert € 9.500,--.",
+      soll: [{ konto: "PKW", betrag: 9500 }], haben: [{ konto: "PRIV", betrag: 9500 }],
+      analyse: [["PKW", "aktiv", "+", "S"], ["PRIV", "sonder", "", "H"]],
+      merke: "Gleiches Muster wie beim Schreibtisch: Anlage an Privat.", fehler: "PKW an EK. Unterm Jahr nie direkt aufs Eigenkapital." },
+    { id: "le3-14", gefuehrt: true, datum: "7.7.", text: "Der Unternehmer nimmt Waren für private Zwecke mit. Einstandspreis € 120,--, Verkaufspreis € 200,--.",
+      soll: [{ konto: "PRIV", betrag: 120 }], haben: [{ konto: "EV", betrag: 120 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["EV", "ertrag", "+", "H"]],
+      merke: "Warenentnahme → Eigenverbrauch (Ertrag), zum Einstandspreis.", fehler: "Den Verkaufspreis nehmen oder WES im Haben buchen." },
+    { id: "le3-15", gefuehrt: true, datum: "31.12.", text: "Inventur: Anfangsbestand Waren € 21.000,--, Schlussbestand laut Inventur € 18.400,--. Buche den Unterschiedsbetrag.",
+      soll: [{ konto: "WES", betrag: 2600 }], haben: [{ konto: "WV", betrag: 2600 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["WV", "aktiv", "–", "H"]],
+      merke: "18.400 − 21.000 = −2.600: Lagerabnahme → WES an WV.", fehler: "Den ganzen Schlussbestand buchen statt nur die Differenz." },
+    { id: "le3-16", datum: "31.12.", text: "Inventur: Anfangsbestand Waren € 24.300,--, Schlussbestand laut Inventur € 27.500,--. Buche den Unterschiedsbetrag.",
+      soll: [{ konto: "WV", betrag: 3200 }], haben: [{ konto: "WES", betrag: 3200 }],
+      analyse: [["WV", "aktiv", "+", "S"], ["WES", "aufwand", "–", "H"]],
+      merke: "27.500 − 24.300 = +3.200: Lagerzunahme → WV an WES.", fehler: "Immer WES an WV buchen. Erst rechnen, dann Richtung wählen." },
+    { id: "le3-17", datum: "31.12.", text: "Abschluss: Das Konto Wareneinsatz hat nach der Unterschiedsbetragsbuchung einen Saldo von € 46.800,--.",
+      soll: [{ konto: "G&V", betrag: 46800 }], haben: [{ konto: "WES", betrag: 46800 }],
+      analyse: [["G&V", "hilf", "", "S"], ["WES", "aufwand", "–", "H"]],
+      merke: "WES ist ein Aufwandskonto → G&V an WES.", fehler: "SBK an WES. Nur WV geht ins SBK." },
+    { id: "le3-18", datum: "31.12.", text: "Abschluss: Das Konto Warenerträge hat einen Saldo von € 71.300,--.",
+      soll: [{ konto: "WE", betrag: 71300 }], haben: [{ konto: "G&V", betrag: 71300 }],
+      analyse: [["WE", "ertrag", "–", "S"], ["G&V", "hilf", "", "H"]],
+      merke: "Ertragskonto → Konto an G&V.", fehler: "G&V an WE." },
+    { id: "le3-19", datum: "31.12.", text: "Abschluss: Warenvorräte, Schlussbestand laut Inventur € 18.400,--.",
+      soll: [{ konto: "SBK", betrag: 18400 }], haben: [{ konto: "WV", betrag: 18400 }],
+      analyse: [["SBK", "hilf", "", "S"], ["WV", "aktiv", "–", "H"]],
+      merke: "WV ist das einzige Warenkonto, das ins SBK geht, mit genau dem Inventurwert.", fehler: "G&V an WV. Warenvorräte sind Vermögen, kein Aufwand." },
+    { id: "le3-20", datum: "31.12.", text: "Konto Privat: Entnahmen gesamt € 7.900,--, Einlagen gesamt € 2.000,--. Schliesse Privat ab.",
+      soll: [{ konto: "EK", betrag: 5900 }], haben: [{ konto: "PRIV", betrag: 5900 }],
+      analyse: [["EK", "passiv", "–", "S"], ["PRIV", "sonder", "", "H"]],
+      merke: "Entnahmen überwiegen um 5.900 → Eigenkapital sinkt → EK an PRIV.", fehler: "G&V statt EK. Privat geht nie ins G&V." },
+    { id: "le3-21", datum: "31.12.", text: "Konto Privat: Entnahmen gesamt € 1.500,--, Einlagen gesamt € 6.000,--. Schliesse Privat ab.",
+      soll: [{ konto: "PRIV", betrag: 4500 }], haben: [{ konto: "EK", betrag: 4500 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["EK", "passiv", "+", "H"]],
+      merke: "Einlagen überwiegen um 4.500 → Eigenkapital steigt → PRIV an EK.", fehler: "Brutto statt Saldo buchen (6.000 oder 1.500)." },
+    { id: "le3-22", datum: "31.12.", text: "Abschluss: Das Konto Eigenverbrauch hat einen Saldo von € 120,--.",
+      soll: [{ konto: "EV", betrag: 120 }], haben: [{ konto: "G&V", betrag: 120 }],
+      analyse: [["EV", "ertrag", "–", "S"], ["G&V", "hilf", "", "H"]],
+      merke: "Eigenverbrauch ist ein Ertragskonto → an G&V.", fehler: "EV an PRIV oder EK. EV ist ein normales Ertragskonto." }
+  ]
+};
+
+</script>
+<script>
+/* LE 4 · Umsatzsteuer / Vorsteuer (österreichisches System, 20 % / 10 %)
+   Eigene Texte und Zahlen. Grundlage: Folien LE 4 + Arbeitsblatt LE 4 (nur Inhalt). Ungeprüft bis Gegentest. */
+window.INHALT = window.INHALT || {};
+INHALT[4] = {
+  titel: "Umsatzsteuer / Vorsteuer",
+  arten: ["aktiv", "passiv", "aufwand", "ertrag", "sonder", "hilf"],
+  konten: ["VST", "UST", "USTZ", "WES", "WE", "EV", "PRIV", "LF", "LV", "KA", "BGH", "WERBA", "REPA", "TEA", "TRA", "GA", "EBK", "SBK"],
+  gegentest: "Löse das Arbeitsblatt zu LE 4 (Christians Accessoires mit USt, Umbuchung auf USt-Zahllast, Helmuts Metzgerei, Winnies Warenwelt) und die Zusatzbeispiele zu LE 4 auf Papier, ohne App. Dann mit der offiziellen Lösung vergleichen.",
+  kannst: [
+    "Vorsteuer und Umsatzsteuer aus Netto- oder Bruttobeträgen berechnen (20 % und 10 %)",
+    "Einkäufe mit Vorsteuer und Verkäufe mit Umsatzsteuer zusammengesetzt buchen",
+    "Vorsteuer und Umsatzsteuer am Monatsende auf die USt-Zahllast umbuchen und die Zahllast bezahlen",
+    "Eigenverbrauch mit Umsatzsteuer buchen",
+    "Den Rechnungsausgleich immer mit dem Bruttobetrag buchen"
+  ],
+  abschnitte: [
+    {
+      titel: "Vorsteuer und Umsatzsteuer",
+      inhalt: [
+        "Fast jeder Preis enthält Umsatzsteuer. Das Unternehmen zahlt sie nicht selbst, es reicht sie nur durch:",
+        { liste: [
+          "Beim <b>Einkauf</b> zahlen wir Steuer an den Lieferanten. Die holen wir uns vom Finanzamt zurück → <b>Vorsteuer (VST)</b>, eine Forderung, also <b>aktiv</b>.",
+          "Beim <b>Verkauf</b> kassieren wir Steuer vom Kunden. Die schulden wir dem Finanzamt → <b>Umsatzsteuer (UST)</b>, eine Verbindlichkeit, also <b>passiv</b>."
+        ] },
+        "Ans Finanzamt geht nur die Differenz, die <b>USt-Zahllast</b>:",
+        { liste: ["Umsatzsteuer 600", "− Vorsteuer 200", "= USt-Zahllast 400"] },
+        { merke: "Deshalb heisst sie auch Mehrwertsteuer: Jedes Unternehmen in der Kette zahlt nur Steuer auf den Wert, den es selbst dazugefügt hat. Tragen muss sie am Ende der Endverbraucher." }
+      ],
+      check: {
+        frage: "Was für ein Konto ist die Vorsteuer?",
+        optionen: ["Aktives Bestandskonto (Forderung ans Finanzamt)", "Passives Bestandskonto (Schuld ans Finanzamt)", "Aufwandskonto"],
+        richtig: 0,
+        erklaerung: "Die Vorsteuer bekommen wir vom Finanzamt zurück. Sie ist eine Forderung → aktiv."
+      }
+    },
+    {
+      titel: "Steuer richtig ausrechnen",
+      inhalt: [
+        "Die Prüfung rechnet mit österreichischen Sätzen: <b>20 %</b> Normalsatz, <b>10 %</b> ermässigt (z. B. Lebensmittel, Bücher).",
+        { liste: [
+          "Steuer vom <b>Netto</b>: Netto × 20 / 100",
+          "Steuer vom <b>Brutto</b>: Brutto × 20 / 120",
+          "Netto vom Brutto: Brutto × 100 / 120",
+          "Bei 10 %: statt 20 und 120 einfach 10 und 110"
+        ] },
+        "Beispiel: Rechnung € 3.600,-- inkl. 20 % USt → Steuer 3.600 × 20 / 120 = 600, Netto 3.000.",
+        { merke: "Achte auf die Wörter: „zzgl.“, „plus“ oder „netto“ heisst: Steuer kommt noch dazu. „inkl.“ oder „brutto“ heisst: Steuer steckt schon drin. Hier passieren die meisten Rechenfehler." }
+      ],
+      check: {
+        frage: "Ein Einkauf kostet € 1.440,-- inklusive 20 % USt. Wie hoch ist die Vorsteuer?",
+        optionen: ["240,--", "288,--", "120,--"],
+        richtig: 0,
+        erklaerung: "Inklusive heisst brutto: 1.440 × 20 / 120 = 240. Die 288 wären 20 % vom Brutto, das ist falsch."
+      }
+    },
+    {
+      titel: "Einkauf mit Vorsteuer",
+      inhalt: [
+        "Die Steuer wird sofort auf ein eigenes Konto gebucht (Nettomethode). Dadurch entsteht ein <b>zusammengesetzter Buchungssatz</b>:",
+        "Waren um € 1.000,-- netto + 20 % USt auf Ziel:",
+        { satz: { soll: [["WES", 1000], ["VST", 200]], haben: [["LV", 1200]] } },
+        "Das gilt genauso für Aufwände und Anlagen: Werbung, Reparaturen, ein neues Regal. Der Aufwand bzw. die Anlage wird netto gebucht, die Vorsteuer extra.",
+        { merke: "Auf WES, Aufwands- und Anlagekonten steht immer das <b>Netto</b>. Auf LV, KA oder BGH steht das <b>Brutto</b>, denn so viel zahlen wir ja wirklich." }
+      ],
+      check: {
+        frage: "Reparatur € 500,-- zzgl. 20 % USt, bar bezahlt. Was steht im Haben?",
+        optionen: ["Kassa 600,--", "Kassa 500,--", "Kassa 500,-- und USt 100,--"],
+        richtig: 0,
+        erklaerung: "Bar bezahlt wird brutto: 500 + 100 = 600. Im Soll stehen REPA 500 und VST 100."
+      }
+    },
+    {
+      titel: "Verkauf mit Umsatzsteuer",
+      inhalt: [
+        "Spiegelverkehrt beim Verkauf. Waren um € 3.000,-- netto + 20 % USt auf Ziel:",
+        { satz: { soll: [["LF", 3600]], haben: [["WE", 3000], ["UST", 600]] } },
+        "Der Kunde schuldet uns brutto (LF 3.600). Unser Ertrag ist nur netto (WE 3.000). Die 600 gehören dem Finanzamt (UST).",
+        { merke: "Bezahlt der Kunde später, buchst du <b>BGH an LF</b> mit dem Bruttobetrag, ohne Steuer. Die Steuer wurde schon beim Verkauf erfasst." }
+      ],
+      check: {
+        frage: "Ein Kunde überweist eine Rechnung über € 4.800,-- brutto. Welcher Buchungssatz?",
+        optionen: ["BGH an LF 4.800,--", "BGH 4.800 an LF 4.000, UST 800", "BGH an WE 4.000, UST 800"],
+        richtig: 0,
+        erklaerung: "Beim Zahlungseingang wird nur die Forderung ausgeglichen, brutto. USt und Ertrag sind schon beim Verkauf gebucht."
+      }
+    },
+    {
+      titel: "Monatsende: die USt-Zahllast",
+      inhalt: [
+        "Am Monatsende werden Vorsteuer und Umsatzsteuer auf das Konto <b>USt-Zahllast (USTZ)</b> umgebucht, ein passives Bestandskonto:",
+        { liste: ["Vorsteuer: <b>USTZ an VST</b>", "Umsatzsteuer: <b>UST an USTZ</b>"] },
+        "Bezahlt wird die Zahllast in Österreich am 15. des <b>zweitfolgenden</b> Monats (für Jänner also am 15.3.):",
+        { satz: { soll: [["USTZ", 1200]], haben: [["BGH", 1200]] } },
+        { tkonten: [{ name: "USt-Zahllast", soll: [["VST", 900], ["BGH", 1200]], haben: [["UST", 2100]], summe: 2100 }] },
+        { merke: "VST und UST werden jeden Monat umgebucht und am 1.1. nicht eröffnet. USTZ dagegen wird mit EBK eröffnet und mit SBK abgeschlossen." }
+      ],
+      check: {
+        frage: "Im März: Umsatzsteuer gesamt € 2.400,--, Vorsteuer gesamt € 900,--. Wie hoch ist die Zahllast und wann wird sie fällig?",
+        optionen: ["1.500,--, am 15.5.", "1.500,--, am 15.4.", "3.300,--, am 15.5."],
+        richtig: 0,
+        erklaerung: "2.400 − 900 = 1.500. Fällig am 15. des zweitfolgenden Monats: März → 15.5."
+      }
+    },
+    {
+      titel: "Eigenverbrauch mit Umsatzsteuer",
+      inhalt: [
+        "Nimmt der Unternehmer Waren privat mit, ist das steuerpflichtig, als hätte er sie an sich selbst verkauft. Bewertet wird zum <b>Einstandspreis</b>:",
+        "Waren mit Einstandspreis € 200,-- (20 %) privat entnommen:",
+        { satz: { soll: [["PRIV", 240]], haben: [["EV", 200], ["UST", 40]] } },
+        "Bei Lebensmitteln gilt der ermässigte Satz: Einstandspreis 50 → EV 50, UST 5, Privat 55.",
+        { merke: "Privat im Soll mit dem Bruttobetrag. EV ist ein Ertragskonto, UST wie bei jedem Verkauf." }
+      ],
+      check: {
+        frage: "Eine Bäckerin nimmt Brot mit, Einstandspreis € 30,--, Verkaufspreis € 50,-- (10 % USt). Welcher Betrag steht im Soll auf Privat?",
+        optionen: ["33,--", "55,--", "36,--"],
+        richtig: 0,
+        erklaerung: "Einstandspreis 30 + 10 % USt (3) = 33. Der Verkaufspreis ist hier egal, und Lebensmittel haben 10 %, nicht 20 %."
+      }
+    }
+  ],
+  faelle: [
+    { id: "le4-01", gefuehrt: true, datum: "3.1.", text: "Wir kaufen Waren auf Ziel, € 2.500,-- zzgl. 20 % USt.",
+      soll: [{ konto: "WES", betrag: 2500 }, { konto: "VST", betrag: 500 }], haben: [{ konto: "LV", betrag: 3000 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "WES netto, VST extra, LV brutto.", fehler: "LV nur mit 2.500 buchen. Wir schulden dem Lieferanten brutto." },
+    { id: "le4-02", gefuehrt: true, datum: "7.1.", text: "Wir verkaufen Waren bar, € 1.800,-- netto zzgl. 20 % USt.",
+      soll: [{ konto: "KA", betrag: 2160 }], haben: [{ konto: "WE", betrag: 1800 }, { konto: "UST", betrag: 360 }],
+      analyse: [["KA", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "Kassa brutto, Ertrag netto, Steuer an Finanzamt.", fehler: "VST statt UST. Beim Verkauf entsteht immer Umsatzsteuer." },
+    { id: "le4-03", gefuehrt: true, datum: "12.1.", text: "Wir kaufen Waren bar, € 1.440,-- inklusive 20 % USt.",
+      soll: [{ konto: "WES", betrag: 1200 }, { konto: "VST", betrag: 240 }], haben: [{ konto: "KA", betrag: 1440 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Inklusive → 1.440 × 20 / 120 = 240 Steuer, 1.200 netto.", fehler: "20 % von 1.440 rechnen (288). Vom Brutto immer × 20 / 120." },
+    { id: "le4-04", datum: "15.1.", text: "Wir verkaufen Waren auf Ziel, € 6.000,-- zzgl. 20 % USt.",
+      soll: [{ konto: "LF", betrag: 7200 }], haben: [{ konto: "WE", betrag: 6000 }, { konto: "UST", betrag: 1200 }],
+      analyse: [["LF", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "Der Kunde schuldet brutto: 7.200.", fehler: "LF mit 6.000. Dann gehen Soll und Haben nicht auf." },
+    { id: "le4-05", datum: "20.1.", text: "Wir bezahlen Werbeplakate bar, € 600,-- zzgl. 20 % USt.",
+      soll: [{ konto: "WERBA", betrag: 600 }, { konto: "VST", betrag: 120 }], haben: [{ konto: "KA", betrag: 720 }],
+      analyse: [["WERBA", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Vorsteuer gibt es nicht nur bei Waren, sondern bei jedem Einkauf mit Rechnung.", fehler: "Die Steuer in den Aufwand packen (WERBA 720)." },
+    { id: "le4-06", datum: "23.1.", text: "Ein Kunde kauft Waren und überweist sofort € 3.840,-- inklusive 20 % USt.",
+      soll: [{ konto: "BGH", betrag: 3840 }], haben: [{ konto: "WE", betrag: 3200 }, { konto: "UST", betrag: 640 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "3.840 × 20 / 120 = 640 Steuer, 3.200 netto.", fehler: "Netto mit × 100 / 120 vergessen und WE 3.840 buchen." },
+    { id: "le4-07", datum: "25.1.", text: "Rechnung für die Reparatur der Kühltheke, zahlbar in 14 Tagen, € 450,-- zzgl. 20 % USt.",
+      soll: [{ konto: "REPA", betrag: 450 }, { konto: "VST", betrag: 90 }], haben: [{ konto: "LV", betrag: 540 }],
+      analyse: [["REPA", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Rechnung noch offen → LV brutto.", fehler: "BGH statt LV. „Zahlbar in 14 Tagen“ heisst: noch nicht bezahlt." },
+    { id: "le4-08", datum: "28.1.", text: "Kauf eines Büroregals (Geschäftsausstattung) per Banküberweisung, € 1.500,-- zzgl. 20 % USt.",
+      soll: [{ konto: "GA", betrag: 1500 }, { konto: "VST", betrag: 300 }], haben: [{ konto: "BGH", betrag: 1800 }],
+      analyse: [["GA", "aktiv", "+", "S"], ["VST", "aktiv", "+", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Auch Anlagen werden netto aktiviert, die Vorsteuer geht extra.", fehler: "GA mit 1.800 buchen. Die Steuer ist kein Teil des Regals." },
+    { id: "le4-09", gefuehrt: true, datum: "31.1.", text: "Monatsende: Die Vorsteuer für Jänner beträgt insgesamt € 1.250,--. Buche sie um.",
+      soll: [{ konto: "USTZ", betrag: 1250 }], haben: [{ konto: "VST", betrag: 1250 }],
+      analyse: [["USTZ", "passiv", "–", "S"], ["VST", "aktiv", "–", "H"]],
+      merke: "Vorsteuer verringert die Zahllast → USTZ an VST.", fehler: "VST an USTZ. Die Vorsteuer steht im Soll, also wird sie im Haben ausgebucht." },
+    { id: "le4-10", gefuehrt: true, datum: "31.1.", text: "Monatsende: Die Umsatzsteuer für Jänner beträgt insgesamt € 2.200,--. Buche sie um.",
+      soll: [{ konto: "UST", betrag: 2200 }], haben: [{ konto: "USTZ", betrag: 2200 }],
+      analyse: [["UST", "passiv", "–", "S"], ["USTZ", "passiv", "+", "H"]],
+      merke: "Umsatzsteuer erhöht die Zahllast → UST an USTZ.", fehler: "UST mit SBK abschliessen. UST und VST gehen jeden Monat in die Zahllast." },
+    { id: "le4-11", datum: "15.3.", text: "Wir überweisen die USt-Zahllast für Jänner ans Finanzamt, € 950,--.",
+      soll: [{ konto: "USTZ", betrag: 950 }], haben: [{ konto: "BGH", betrag: 950 }],
+      analyse: [["USTZ", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Schuld ans Finanzamt bezahlen: USTZ an BGH.", fehler: "UST an BGH. Bezahlt wird die Zahllast, nicht die Umsatzsteuer." },
+    { id: "le4-12", datum: "10.2.", text: "Der Kunde vom 15.1. überweist seine Rechnung, € 7.200,--.",
+      soll: [{ konto: "BGH", betrag: 7200 }], haben: [{ konto: "LF", betrag: 7200 }],
+      analyse: [["BGH", "aktiv", "+", "S"], ["LF", "aktiv", "–", "H"]],
+      merke: "Zahlungseingang: nur Bank an Forderung, brutto.", fehler: "Nochmal UST buchen. Die Steuer wurde am 15.1. schon erfasst." },
+    { id: "le4-13", datum: "14.2.", text: "Wir bezahlen die Lieferantenrechnung vom 3.1. per Banküberweisung, € 3.000,--.",
+      soll: [{ konto: "LV", betrag: 3000 }], haben: [{ konto: "BGH", betrag: 3000 }],
+      analyse: [["LV", "passiv", "–", "S"], ["BGH", "aktiv", "–", "H"]],
+      merke: "Zahlungsausgang: Schuld an Bank, brutto, ohne Vorsteuer.", fehler: "LV 2.500 und VST 500 trennen. Bezahlt wird die ganze Schuld." },
+    { id: "le4-14", gefuehrt: true, datum: "18.2.", text: "Der Unternehmer nimmt Waren für private Zwecke. Einstandspreis € 150,--, Verkaufspreis € 260,-- (20 % USt).",
+      soll: [{ konto: "PRIV", betrag: 180 }], haben: [{ konto: "EV", betrag: 150 }, { konto: "UST", betrag: 30 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["EV", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "Eigenverbrauch zum Einstandspreis, plus Umsatzsteuer.", fehler: "Mit dem Verkaufspreis rechnen oder die USt vergessen." },
+    { id: "le4-15", datum: "22.2.", text: "Eine Bäckerin nimmt Brot für ihre Familie mit. Einstandspreis € 40,--, ermässigter Steuersatz 10 %.",
+      soll: [{ konto: "PRIV", betrag: 44 }], haben: [{ konto: "EV", betrag: 40 }, { konto: "UST", betrag: 4 }],
+      analyse: [["PRIV", "sonder", "", "S"], ["EV", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "Lebensmittel: 10 %.", fehler: "Automatisch 20 % rechnen. Lies immer, um was es geht." },
+    { id: "le4-16", datum: "26.2.", text: "Ein Lebensmittelhändler kauft Waren auf Ziel, € 800,-- zzgl. 10 % USt.",
+      soll: [{ konto: "WES", betrag: 800 }, { konto: "VST", betrag: 80 }], haben: [{ konto: "LV", betrag: 880 }],
+      analyse: [["WES", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Gleiches Schema, nur 10 %.", fehler: "160 Vorsteuer (20 %) buchen." },
+    { id: "le4-17", datum: "1.1.", text: "Eröffnung: Die USt-Zahllast aus dem Vorjahr hat einen Anfangsbestand von € 2.300,--.",
+      soll: [{ konto: "EBK", betrag: 2300 }], haben: [{ konto: "USTZ", betrag: 2300 }],
+      analyse: [["EBK", "hilf", "", "S"], ["USTZ", "passiv", "+", "H"]],
+      merke: "USTZ ist passiv → EBK an USTZ. VST und UST werden nicht eröffnet.", fehler: "EBK an UST. Nur die Zahllast hat einen Anfangsbestand." },
+    { id: "le4-18", datum: "31.12.", text: "Abschluss: Die USt-Zahllast hat einen Schlussbestand von € 1.700,-- (Schuld ans Finanzamt).",
+      soll: [{ konto: "USTZ", betrag: 1700 }], haben: [{ konto: "SBK", betrag: 1700 }],
+      analyse: [["USTZ", "passiv", "–", "S"], ["SBK", "hilf", "", "H"]],
+      merke: "Passives Konto → Konto an SBK.", fehler: "G&V an USTZ. Steuern auf Umsätze sind kein Aufwand." },
+    { id: "le4-19", datum: "5.3.", text: "Die Telefonrechnung wird bar bezahlt, € 120,-- zzgl. 20 % USt.",
+      soll: [{ konto: "TEA", betrag: 120 }, { konto: "VST", betrag: 24 }], haben: [{ konto: "KA", betrag: 144 }],
+      analyse: [["TEA", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["KA", "aktiv", "–", "H"]],
+      merke: "Aufwand netto, Vorsteuer extra, Kassa brutto.", fehler: "Nur TEA an KA 120. Dann fehlen 24 in der Kassa." },
+    { id: "le4-20", datum: "9.3.", text: "Transportrechnung einer Spedition, zahlbar in 30 Tagen, € 300,-- zzgl. 20 % USt.",
+      soll: [{ konto: "TRA", betrag: 300 }, { konto: "VST", betrag: 60 }], haben: [{ konto: "LV", betrag: 360 }],
+      analyse: [["TRA", "aufwand", "+", "S"], ["VST", "aktiv", "+", "S"], ["LV", "passiv", "+", "H"]],
+      merke: "Transportaufwände (TRA) wie jeder andere Aufwand mit Vorsteuer.", fehler: "UST statt VST. Wir bezahlen die Rechnung → Vorsteuer." },
+    { id: "le4-21", datum: "12.3.", text: "Wir verkaufen Waren um € 3.000,-- zzgl. 20 % USt. Der Kunde zahlt € 1.000,-- sofort bar, der Rest bleibt auf Ziel offen.",
+      soll: [{ konto: "KA", betrag: 1000 }, { konto: "LF", betrag: 2600 }], haben: [{ konto: "WE", betrag: 3000 }, { konto: "UST", betrag: 600 }],
+      analyse: [["KA", "aktiv", "+", "S"], ["LF", "aktiv", "+", "S"], ["WE", "ertrag", "+", "H"], ["UST", "passiv", "+", "H"]],
+      merke: "Brutto 3.600: 1.000 bar, 2.600 Forderung. Je zwei Zeilen auf beiden Seiten.", fehler: "LF 2.000 rechnen (3.000 − 1.000). Der Rest bezieht sich auf das Brutto." }
+  ]
+};
+
+</script>
+<script>
+"use strict";
+(function () {
+  /* ---------- Daten ---------- */
+  const NAME = Object.fromEntries(KONTEN);
+  const INHALT = window.INHALT || {};
+  const ARTLABEL = { aktiv: "aktives Bestandskonto", passiv: "passives Bestandskonto", aufwand: "Aufwandskonto", ertrag: "Ertragskonto", sonder: "Sonderkonto (Privat)", hilf: "Hilfskonto (EBK, SBK, G&V)" };
+  const ARTKURZ = { aktiv: "aktiv", passiv: "passiv", aufwand: "Aufwand", ertrag: "Ertrag", sonder: "Sonderkonto", hilf: "Hilfskonto" };
+  const OHNE_R = ["hilf", "sonder"];
+  const LEKTIONEN = [
+    [1, "Einführung, Bestandskonten, Bilanz"], [2, "Erfolgskonten, G&V, Personal"], [3, "Warenkonten, Konto Privat"],
+    [4, "Umsatzsteuer / Vorsteuer"], [5, "Rücksendungen, Rabatte, Skonti"], [6, "Bankbewegungen"],
+    [7, "Verbrauchsmaterialien und Waren"], [8, "Produktionsbetrieb"], [9, "Bewertung, Abschreibungen"],
+    [10, "Sonderfälle Anlagevermögen"], [11, "Bewertung Vorräte"], [12, "Forderungsbewertung"],
+    [13, "Rückstellungen"], [14, "Rechnungsabgrenzungen"]
+  ];
+  const PLAN = { 2: "Mi 18.11.", 3: "Mi 18.11.", 4: "Mi 18.11.", 5: "Fr 20.11.", 6: "Fr 20.11.", 7: "Fr 20.11.", 8: "Fr 20.11.",
+    9: "Fr 27.11.", 10: "Fr 27.11.", 11: "Fr 27.11.", 12: "Fr 04.12.", 13: "Fr 04.12.", 14: "Fr 04.12." };
+  const FALL = {};
+  Object.keys(INHALT).forEach(nr => INHALT[nr].faelle.forEach(f => { f.le = +nr; FALL[f.id] = f; }));
+  const titel = nr => (LEKTIONEN.find(l => l[0] === +nr) || [0, ""])[1];
+
+  /* ---------- Speicher (nur dieses Gerät) ---------- */
+  const KEY = "bst2";
+  const START = { theme: "system", name: "", pruefung: "2027-01-07", ziel: 10, anzeige: "kurz", lek: {}, f: {}, tage: {}, meld: [], hinweisWeg: false, ueAuswahl: [1] };
+  const kopie = o => JSON.parse(JSON.stringify(o));
+  function laden() {
+    try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && typeof v === "object") return Object.assign(kopie(START), v); } catch (e) {}
+    return kopie(START);
+  }
+  function speichern() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  let S = laden();
+
+  /* ---------- Hilfen ---------- */
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const eur = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + '<span class="nt">,--</span>';
+  function parseBetrag(s) {
+    let t = String(s).replace(/[€\s]/g, "").replace(/,[-–—]+$/, "").replace(/[-–—]+$/, "");
+    if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+    const n = parseFloat(t);
+    return isNaN(n) ? null : Math.round(n * 100) / 100;
+  }
+  const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function isoTag(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  const heute = () => isoTag(new Date());
+  function tageBis(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number); if (!y) return "–";
+    const ziel = new Date(y, m - 1, d), jetzt = new Date(); jetzt.setHours(0, 0, 0, 0);
+    return Math.max(0, Math.round((ziel - jetzt) / 864e5));
+  }
+  const kontenVon = f => [...new Set([...f.soll, ...f.haben].map(z => z.konto))];
+  function kontoHtml(k) {
+    if (S.anzeige === "lang") return `<b>${esc(NAME[k] || k)}</b>`;
+    return `<b>${esc(k)}</b> <span class="kn">${esc(NAME[k] || "")}</span>`;
+  }
+
+  /* ---------- Fortschritt ---------- */
+  function werten(id, richtig) {
+    const e = S.f[id] || { r: 0, w: 0 };
+    if (richtig) e.r++; else e.w++;
+    e.ok = richtig; e.t = Date.now(); S.f[id] = e;
+    const t = heute(); S.tage[t] = (S.tage[t] || 0) + 1;
+    speichern();
+  }
+  function leFortschritt(nr) {
+    const L = INHALT[nr]; if (!L) return 0;
+    const n = L.abschnitte.length, ab = Math.min((S.lek[nr] || {}).ab || 0, n);
+    const ok = L.faelle.filter(f => (S.f[f.id] || {}).r > 0).length;
+    return 0.4 * ab / n + 0.6 * (L.faelle.length ? ok / L.faelle.length : 0);
+  }
+  const gesamt = () => LEKTIONEN.reduce((s, [nr]) => s + leFortschritt(nr), 0) / LEKTIONEN.length;
+  const fehlerListe = () => Object.keys(S.f).filter(id => FALL[id] && S.f[id].ok === false);
+  const lek = nr => (S.lek[nr] = S.lek[nr] || {});
+
+  /* ---------- Icons ---------- */
+  const svg = p => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const I = {
+    home: svg('<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/>'),
+    buch: svg('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>'),
+    stift: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+    uhr: svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>'),
+    gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    x: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+    zurueck: svg('<path d="M15 5l-7 7 7 7"/>'),
+    pfeil: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+    lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+    check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+    blitz: svg('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
+    kreis: svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/>')
+  };
+
+  /* ---------- Theme ---------- */
+  const rootThemeOriginal = document.documentElement.getAttribute("data-theme");
+  function themeAnwenden() {
+    const r = document.documentElement;
+    if (S.theme === "hell") r.setAttribute("data-theme", "light");
+    else if (S.theme === "dunkel") r.setAttribute("data-theme", "dark");
+    else if (rootThemeOriginal) r.setAttribute("data-theme", rootThemeOriginal);
+    else r.removeAttribute("data-theme");
+  }
+
+  /* ---------- Navigation ---------- */
+  let V = { tab: "home", view: null };
+  const app = $("#app"), nav = $("#nav"), sheet = $("#sheet"), toastEl = $("#toast");
+  let animiere = "";
+  function go(view, richtung = "vor") { V.view = view; animiere = richtung; render(); window.scrollTo(0, 0); }
+  function tab(t) { V.tab = t; V.view = null; animiere = "tab"; render(); window.scrollTo(0, 0); }
+
+  const TABS = [["home", "Home", I.home], ["lernen", "Lernen", I.buch], ["ueben", "Üben", I.stift], ["pruefung", "Prüfung", I.uhr]];
+  nav.innerHTML = `<span class="pille" aria-hidden="true"></span>` + TABS.map(([t, l, ic]) => `<button data-act="tab" data-t="${t}">${ic}<span>${l}</span></button>`).join("");
+
+  function render() {
+    const v = V.view;
+    const views = { le: leSeite, lektion: lektionView, gefuehrt: gefuehrtView, ueben: uebenView, drill: drillView, ende: endeView, einst: einstView };
+    const tabs = { home: home, lernen: lernenTab, ueben: uebenTab, pruefung: pruefungTab };
+    app.innerHTML = v ? views[v.typ]() : tabs[V.tab]();
+    if (animiere) {
+      app.classList.remove("rein", "rein-tab"); void app.offsetWidth;
+      app.classList.add(animiere === "tab" ? "rein-tab" : "rein");
+      clearTimeout(render.t); render.t = setTimeout(() => app.classList.remove("rein", "rein-tab"), 700);
+      animiere = "";
+    }
+    nav.hidden = !!v;
+    const i = TABS.findIndex(t => t[0] === V.tab);
+    nav.style.setProperty("--i", i);
+    nav.querySelectorAll("button").forEach((b, j) => { b.classList.toggle("an", j === i); if (j === i) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  }
+
+  function toast(text) {
+    toastEl.textContent = text; toastEl.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { toastEl.hidden = true; }, 2200);
+  }
+
+  /* ---------- Bausteine ---------- */
+  function satzHtml(soll, haben, datum) {
+    const zeile = (k, b, h) => `<div class="sz"><span class="sk">${h ? '<span class="anw">an</span>' : ""}${kontoHtml(k)}</span><span class="sb">${h ? "" : eur(b)}</span><span class="sb">${h ? eur(b) : ""}</span></div>`;
+    return `<div class="satz">${datum ? `<div class="satz-datum">${esc(datum)}</div>` : ""}${soll.map(([k, b]) => zeile(k, b, false)).join("")}${haben.map(([k, b]) => zeile(k, b, true)).join("")}</div>`;
+  }
+  const satzVonFall = f => satzHtml(f.soll.map(z => [z.konto, z.betrag]), f.haben.map(z => [z.konto, z.betrag]), f.datum);
+  function bilanzHtml(b) {
+    const sum = a => a.reduce((s, x) => s + x[1], 0);
+    const n = Math.max(b.aktiva.length, b.passiva.length);
+    let rows = "";
+    for (let i = 0; i < n; i++) {
+      const a = b.aktiva[i], p = b.passiva[i];
+      rows += `<tr><td>${a ? esc(a[0]) : ""}</td><td class="num">${a ? eur(a[1]) : ""}</td><td class="trenn">${p ? esc(p[0]) : ""}</td><td class="num">${p ? eur(p[1]) : ""}</td></tr>`;
+    }
+    return `<div class="scroll"><table class="bilanz"><caption>${esc(b.titel || "Bilanz")}</caption><thead><tr><th colspan="2">Aktiva</th><th colspan="2" class="trenn">Passiva</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td></td><td class="num">${eur(sum(b.aktiva))}</td><td class="trenn"></td><td class="num">${eur(sum(b.passiva))}</td></tr></tfoot></table></div>`;
+  }
+  function tkontoHtml(t) {
+    const seite = arr => arr.map(([g, b]) => `<div class="tz"><span>${esc(g)}</span><span class="num">${eur(b)}</span></div>`).join("") || `<div class="tz leer">&nbsp;</div>`;
+    const summe = t.summe ? `<div class="t-sum"><span class="num">${eur(t.summe)}</span><span class="num">${eur(t.summe)}</span></div>` : "";
+    return `<div class="tkonto"><div class="t-kopf"><span>S</span><b>${esc(t.name)}</b><span>H</span></div><div class="t-body"><div>${seite(t.soll)}</div><div>${seite(t.haben)}</div></div>${summe}</div>`;
+  }
+  function fragenHtml(rows) {
+    return `<div class="scroll"><table class="fragen"><thead><tr><th>Konto</th><th>Kontoart</th><th>+ / –</th><th>Seite</th></tr></thead><tbody>${rows.map(([k, a, r, s]) =>
+      `<tr><td><b>${esc(k)}</b></td><td>${esc(ARTKURZ[a] || a)}</td><td>${esc(r || "·")}</td><td>${s === "S" ? "Soll" : "Haben"}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  const GLOSSAR = {
+    EBK: "Eröffnungsbilanzkonto: Hilfskonto für den 1.1. Es nimmt die Gegenbuchung jedes Anfangsbestands auf und ist das Spiegelbild der Bilanz. Aktive Konten: Konto an EBK. Passive Konten: EBK an Konto.",
+    SBK: "Schlussbilanzkonto: Hilfskonto für den 31.12. Es sammelt die Schlussbestände aller Bestandskonten und ist inhaltlich die Schlussbilanz. Aktive Konten: SBK an Konto. Passive Konten: Konto an SBK.",
+    "G&V": "Gewinn- und Verlustkonto: Hilfskonto für den 31.12. Es sammelt alle Aufwände (Soll) und Erträge (Haben). Der Saldo ist der Gewinn oder Verlust und geht ins Eigenkapital.",
+    PRIV: "Konto Privat: Sonderkonto für alles, was zwischen Unternehmer und Unternehmen fliesst. Entnahme im Soll, Einlage im Haben. Am 31.12. mit dem Eigenkapital abgeschlossen.",
+    EV: "Eigenverbrauch: Ertragskonto für Waren, die der Unternehmer privat entnimmt, bewertet zum Einstandspreis.",
+    WES: "Wareneinsatz: Aufwandskonto. Hier landen alle Wareneinkäufe des Jahres.",
+    WV: "Warenvorräte: aktives Bestandskonto, das während des Jahres ruht. Am 31.12. wird es mit dem Unterschiedsbetrag an die Inventur angepasst.",
+    VST: "Vorsteuer: Steuer, die wir beim Einkauf zahlen und vom Finanzamt zurückbekommen. Aktives Bestandskonto.",
+    UST: "Umsatzsteuer: Steuer, die wir beim Verkauf kassieren und dem Finanzamt schulden. Passives Bestandskonto.",
+    USTZ: "USt-Zahllast: Umsatzsteuer minus Vorsteuer, also was wir dem Finanzamt wirklich zahlen. Passives Bestandskonto."
+  };
+  function glossarHtml(f) {
+    const ks = kontenVon(f).filter(k => GLOSSAR[k]);
+    return ks.length ? `<div class="glossar"><div class="label">Begriffe</div>${ks.map(k => `<p><b>${esc(k)}</b> · ${esc(GLOSSAR[k])}</p>`).join("")}</div>` : "";
+  }
+  function tabelleHtml(t) {
+    return `<div class="scroll"><table class="fragen"><thead><tr>${t.kopf.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${t.zeilen.map(z => `<tr>${z.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+  function block(b) {
+    if (typeof b === "string") return `<p>${b}</p>`;
+    if (b.tabelle) return tabelleHtml(b.tabelle);
+    if (b.liste) { const t = b.nummer ? "ol" : "ul"; return `<${t} class="punkte">${b.liste.map(x => `<li>${x}</li>`).join("")}</${t}>`; }
+    if (b.merke) return `<div class="merke"><div class="label">Merke</div><div>${b.merke}</div></div>`;
+    if (b.satz) return satzHtml(b.satz.soll, b.satz.haben, b.satz.datum);
+    if (b.bilanz) return bilanzHtml(b.bilanz);
+    if (b.tkonten) return `<div class="tk-reihe">${b.tkonten.map(tkontoHtml).join("")}</div>`;
+    if (b.fragen) return fragenHtml(b.fragen);
+    return "";
+  }
+  function ring(pct) {
+    const r = 22, u = 2 * Math.PI * r;
+    return `<svg class="ring" viewBox="0 0 56 56" width="56" height="56" aria-hidden="true"><circle cx="28" cy="28" r="${r}" class="ring-bg"/><circle cx="28" cy="28" r="${r}" class="ring-fg" style="--u:${u};--ziel:${u * (1 - Math.max(pct, 1.5) / 100)}" stroke-dasharray="${u}"/></svg>`;
+  }
+  const kopf = (text, zurueckAct = "schliessen") => `<header class="s-kopf"><button class="rund" data-act="${zurueckAct}" aria-label="Zurück">${zurueckAct === "schliessen" ? I.x : I.zurueck}</button><span class="muted klein">${text}</span><span class="platz"></span></header>`;
+  const segmente = (n, i) => `<div class="segmente">${Array.from({ length: n }, (_, j) => `<i class="${j < i ? "voll" : j === i ? "jetzt" : ""}"></i>`).join("")}</div>`;
+  const melden = ctx => `<button class="link klein" data-act="melden" data-ctx="${esc(ctx)}">${I.kreis} Fehler melden</button>`;
+
+  /* ---------- Home ---------- */
+  function naechstes() {
+    for (const [nr, t] of LEKTIONEN) {
+      const L = INHALT[nr]; if (!L) continue;
+      const ab = (S.lek[nr] || {}).ab || 0, n = L.abschnitte.length;
+      if (ab < n) return { titel: `LE ${nr} · ${t}`, text: ab ? `Abschnitt ${ab + 1} von ${n}` : `${n} kurze Abschnitte, nach jedem eine Frage`, btn: ab ? "Weiterlernen" : "Lektion starten", act: "lektion", nr, min: (n - ab) * 3 };
+      if (!(S.lek[nr] || {}).gef) return { titel: `LE ${nr} · Schritt für Schritt`, text: "Fälle mit den 4 Fragen, einzeln abgefragt", btn: "Los geht's", act: "gefuehrt", nr, min: 10 };
+      const offen = L.faelle.filter(f => !((S.f[f.id] || {}).r > 0)).length;
+      if (offen) return { titel: `LE ${nr} · Fälle üben`, text: `${offen} von ${L.faelle.length} Fällen noch nicht richtig gelöst`, btn: "Fälle üben", act: "uebenLE", nr, min: Math.ceil(offen * 1.5) };
+    }
+    const f = fehlerListe().length;
+    if (f) return { titel: "Fehler ausbügeln", text: `${f} ${f === 1 ? "Fall" : "Fälle"} aus deiner Fehlerliste`, btn: "Fehler üben", act: "fehlerUeben", min: f * 2 };
+    const n = LEKTIONEN.find(([nr]) => !INHALT[nr]);
+    return { titel: "Alles erledigt", text: n ? `LE ${n[0]} kommt ${PLAN[n[0]] || "bald"}. Bis dahin: Gegentest auf Papier.` : "Alle Lektionen durch.", btn: "Kontenplan-Drill", act: "drillStart", min: 3 };
+  }
+  function wocheHtml() {
+    const d = new Date(); const tagNr = (d.getDay() + 6) % 7; const mo = new Date(d); mo.setDate(d.getDate() - tagNr);
+    const kurz = ["M", "D", "M", "D", "F", "S", "S"];
+    return `<div class="woche">${kurz.map((k, i) => {
+      const t = new Date(mo); t.setDate(mo.getDate() + i); const n = S.tage[isoTag(t)] || 0;
+      return `<div class="tag ${i === tagNr ? "heute" : ""}"><span class="muted">${k}</span><b>${t.getDate()}</b><i class="${n >= S.ziel ? "voll" : n ? "halb" : ""}"></i></div>`;
+    }).join("")}</div>`;
+  }
+  function home() {
+    const d = new Date(), h = d.getHours();
+    const gruss = h < 11 ? "Guten Morgen" : h < 17 ? "Hallo" : "Guten Abend";
+    const nx = naechstes(), pct = Math.round(gesamt() * 100), fehler = fehlerListe().length, heuteN = S.tage[heute()] || 0;
+    const datum = d.toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
+    return `
+    <header class="kopf"><button class="rund" data-act="einst" aria-label="Einstellungen">${I.gear}</button><span class="muted">${esc(datum)}</span></header>
+    <h1 class="gruss">${gruss}${S.name ? `,<br><span class="name">${esc(S.name)}</span>` : "."}</h1>
+    <section class="karte fokus">
+      <div class="label">Heute dran</div>
+      <h2>${esc(nx.titel)}</h2>
+      <p class="muted">${esc(nx.text)}</p>
+      <div class="fokus-fuss"><button class="btn" data-act="${nx.act}" data-nr="${nx.nr || ""}">${esc(nx.btn)}</button><span class="muted klein">≈ ${nx.min} min</span></div>
+    </section>
+    <div class="kacheln">
+      <section class="karte kachel">${ring(pct)}<div><div class="gross">${pct} %</div><div class="muted klein">Lernstand</div></div></section>
+      <section class="karte kachel"><div><div class="gross">${tageBis(S.pruefung)}</div><div class="muted klein">Tage bis zur Prüfung</div></div></section>
+    </div>
+    <section class="karte">
+      <div class="zeile"><div class="label">Diese Woche</div><span class="muted klein">Heute ${heuteN} / ${S.ziel} Fälle</span></div>
+      ${wocheHtml()}
+    </section>
+    ${fehler ? `<button class="karte zeile tap" data-act="fehlerUeben"><span><b>${fehler} ${fehler === 1 ? "offener Fehler" : "offene Fehler"}</b><br><span class="muted klein">Gezielt nochmal üben</span></span>${I.pfeil}</button>` : ""}
+    ${S.hinweisWeg ? "" : `<section class="karte hinweis"><div class="zeile"><div class="label">Tipp</div><button class="link klein" data-act="hinweisWeg">Ausblenden</button></div>
+      <p>Leg die App auf deinen Home-Bildschirm. Sonst kann das iPhone deinen Fortschritt nach 7 Tagen ohne Nutzung löschen.</p>
+      <p class="muted klein">iPhone: in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Android: Menü ⋮ → „App installieren“.</p></section>`}`;
+  }
+
+  /* ---------- Lernen ---------- */
+  function lernenTab() {
+    return `<h1 class="titel">Lernen</h1><p class="muted unter">Eine Lektion pro LE. Kurze Abschnitte, nach jedem eine Frage. Danach Fälle Schritt für Schritt.</p>
+    <div class="liste">${LEKTIONEN.map(([nr, t]) => {
+      const L = INHALT[nr], p = Math.round(leFortschritt(nr) * 100);
+      return L
+        ? `<button class="karte le tap" data-act="le" data-nr="${nr}"><span class="nr">${nr}</span><span class="le-text"><b>${esc(t)}</b><span class="balken"><i style="width:${p}%"></i></span></span><span class="muted klein">${p} %</span></button>`
+        : `<div class="karte le aus"><span class="nr">${nr}</span><span class="le-text"><b>${esc(t)}</b><span class="muted klein">kommt ${PLAN[nr] || "bald"}</span></span>${I.lock}</div>`;
+    }).join("")}</div>`;
+  }
+  function leSeite() {
+    const nr = V.view.nr, L = INHALT[nr], n = L.abschnitte.length, ab = Math.min((S.lek[nr] || {}).ab || 0, n);
+    const ok = L.faelle.filter(f => (S.f[f.id] || {}).r > 0).length, gef = L.faelle.filter(f => f.gefuehrt).length;
+    const schritt = (i, t, sub, act, fertig) => `<button class="karte schritt tap" data-act="${act}" data-nr="${nr}"><span class="nr ${fertig ? "fertig" : ""}">${fertig ? I.check : i}</span><span><b>${t}</b><br><span class="muted klein">${sub}</span></span>${I.pfeil}</button>`;
+    return `${kopf("Lernen", "zuTab")}
+    <div class="label">LE ${nr}</div><h1 class="titel">${esc(L.titel)}</h1>
+    <div class="liste">
+      ${schritt(1, "Lektion", `${ab} / ${n} Abschnitte`, "lektion", ab >= n)}
+      ${schritt(2, "Schritt für Schritt", `${gef} Fälle mit den 4 Fragen`, "gefuehrt", (S.lek[nr] || {}).gef)}
+      ${schritt(3, "Fälle üben", `${ok} / ${L.faelle.length} richtig gelöst`, "uebenLE", ok === L.faelle.length)}
+      ${schritt(4, "Kontenplan-Drill", "10 schnelle Fragen zu den Konten dieser LE", "drillLE", false)}
+    </div>
+    <section class="karte"><div class="label">Das musst du können</div><ul class="punkte haken">${L.kannst.map(k => `<li>${esc(k)}</li>`).join("")}</ul></section>
+    <section class="karte hinweis"><div class="label">Gegentest auf Papier</div><p>${esc(L.gegentest)}</p></section>`;
+  }
+
+  /* Lektion */
+  function lektionStart(nr) {
+    const L = INHALT[nr], ab = (S.lek[nr] || {}).ab || 0;
+    go({ typ: "lektion", nr, i: ab < L.abschnitte.length ? ab : 0, a: null, falsch: [] });
+  }
+  function lektionView() {
+    const v = V.view, L = INHALT[v.nr], A = L.abschnitte[v.i], n = L.abschnitte.length, c = A.check;
+    const richtig = v.a === c.richtig;
+    return `${kopf(`LE ${v.nr} · Abschnitt ${v.i + 1} von ${n}`)}${segmente(n, v.i)}
+    <article class="karte lektion"><h2>${esc(A.titel)}</h2>${A.inhalt.map(block).join("")}</article>
+    <section class="karte frage"><div class="label">Kurz checken</div><p class="frage-text">${c.frage}</p>
+      <div class="optionen">${(v.order = v.order || shuffle(c.optionen.map((_, j) => j))).map(j => {
+        const o = c.optionen[j];
+        const cls = (richtig && j === c.richtig ? "ok" : v.falsch.includes(j) ? "bad" : "") + (j === v.letzte ? " neu" : "");
+        return `<button class="opt ${cls}" data-act="antwort" data-j="${j}" ${richtig ? "disabled" : ""}>${o}</button>`;
+      }).join("")}</div>
+      ${richtig ? `<div class="fb ok"><b>Richtig.</b> ${c.erklaerung}</div>` : v.falsch.length ? `<div class="fb bad"><b>Nicht ganz.</b> Lies den Abschnitt nochmal und versuch's erneut.</div>` : ""}
+    </section>
+    <div class="aktionen">${richtig ? `<button class="btn breit" data-act="weiter">${v.i + 1 < n ? "Weiter" : "Lektion abschliessen"}</button>` : ""}
+      ${v.i > 0 ? `<button class="link" data-act="zurueckAbschnitt">← Vorheriger Abschnitt</button>` : ""}
+      ${melden(`LE ${v.nr} · Abschnitt ${v.i + 1}`)}</div>`;
+  }
+
+  /* Schritt für Schritt (4 Fragen) */
+  function gefStart(nr) {
+    const q = INHALT[nr].faelle.filter(f => f.gefuehrt).map(f => f.id);
+    V.view = { typ: "gefuehrt", nr, q, k: 0, richtig: 0 };
+    gefFall(); window.scrollTo(0, 0);
+  }
+  function gefFall() {
+    const v = V.view, f = FALL[v.q[v.k]], richtig = kontenVon(f);
+    const pool = INHALT[v.nr].konten.filter(k => !richtig.includes(k));
+    v.opt = shuffle(richtig.concat(shuffle(pool).slice(0, 4)));
+    v.stufe = "konten"; v.wahl = []; v.sauber = true; v.a = {}; v.fx = null;
+    animiere = "vor"; render();
+  }
+  function gefuehrtView() {
+    const v = V.view, f = FALL[v.q[v.k]], L = INHALT[v.nr];
+    let body = "";
+    if (v.stufe === "konten") {
+      const soll = kontenVon(f);
+      body = `<section class="karte"><div class="label">Frage 1 von 4</div><h3>Welche Konten sind beteiligt?</h3>
+        <p class="muted klein">Tipp alle an, die sich durch den Fall verändern.</p>
+        <div class="chips">${v.opt.map(k => {
+          const an = v.wahl.includes(k), cls = v.fx && an ? (soll.includes(k) ? "ok" : "bad") : "";
+          return `<button class="chip ${an ? "an" : ""} ${cls}" data-act="gefWahl" data-k="${esc(k)}">${kontoHtml(k)}</button>`;
+        }).join("")}</div>
+        ${v.fx ? `<div class="fb bad">${v.fx}</div>` : ""}
+        <button class="btn breit" data-act="gefKonten" ${v.wahl.length ? "" : "disabled"}>Prüfen</button></section>`;
+    } else {
+      const zeilen = f.analyse.map(([k, art, r, s]) => {
+        const a = v.a[k] || {}, x = (v.fx || {})[k] || {};
+        const seg = (feld, opts, label) => `<div class="seg-zeile"><span class="muted klein">${label}</span><div class="seg">${opts.map(([val, txt]) =>
+          `<button class="${a[feld] === val ? "an" : ""} ${a[feld] === val && x[feld] === false ? "bad" : ""} ${a[feld] === val && x[feld] === true ? "ok" : ""}" data-act="gefSet" data-k="${esc(k)}" data-f="${feld}" data-v="${val}" ${v.stufe === "fertig" ? "disabled" : ""}>${txt}</button>`).join("")}</div></div>`;
+        const zeigeR = !OHNE_R.includes(a.art);
+        return `<div class="analyse"><div class="an-kopf">${kontoHtml(k)}</div>
+          ${seg("art", L.arten.map(t => [t, ARTKURZ[t]]), "Kontoart")}
+          ${zeigeR ? seg("r", [["+", "+ Zugang"], ["–", "– Abgang"]], "Zugang oder Abgang") : ""}
+          ${seg("s", [["S", "Soll"], ["H", "Haben"]], "Seite")}</div>`;
+      }).join("");
+      body = `<section class="karte"><div class="label">Fragen 2 bis 4</div><h3>Kontoart, Zugang oder Abgang, Seite</h3>${zeilen}
+        ${v.fx && v.stufe !== "fertig" ? `<div class="fb bad">Rot markiert ist noch falsch. Korrigier es und prüf nochmal.</div>` : ""}
+        ${v.stufe !== "fertig" ? `<button class="btn breit" data-act="gefAnalyse">Prüfen</button>` : ""}</section>`;
+      if (v.stufe === "fertig") body += `<section class="karte"><div class="fb ${v.sauber ? "ok" : "neutral"}"><b>${v.sauber ? "Auf Anhieb richtig." : "Jetzt stimmt's."}</b> Daraus wird der Buchungssatz:</div>${satzVonFall(f)}
+        <div class="merke"><div class="label">Merke</div><div>${esc(f.merke)}</div></div>
+        <p class="muted klein"><b>Typischer Fehler:</b> ${esc(f.fehler)}</p>${glossarHtml(f)}
+        <button class="btn breit" data-act="gefWeiter">${v.k + 1 < v.q.length ? "Nächster Fall" : "Fertig"}</button>${melden(`LE ${v.nr} · Fall ${f.id}`)}</section>`;
+    }
+    return `${kopf(`Schritt für Schritt · Fall ${v.k + 1} von ${v.q.length}`)}${segmente(v.q.length, v.k)}
+      <section class="karte fall"><div class="label">Geschäftsfall · ${esc(f.datum)}</div><p>${esc(f.text)}</p></section>${body}`;
+  }
+
+  /* Fälle üben (freie Eingabe) */
+  function uebenStart(ids, titelText, zurueck) {
+    if (!ids.length) { toast("Keine Fälle ausgewählt."); return; }
+    V.view = { typ: "ueben", q: shuffle(ids), k: 0, richtig: 0, titel: titelText, zurueck };
+    neueEingabe(); window.scrollTo(0, 0);
+  }
+  function neueEingabe() { const v = V.view; v.ein = { soll: [{ konto: "", betrag: "" }], haben: [{ konto: "", betrag: "" }] }; v.geprueft = false; v.ok = null; animiere = "vor"; render(); }
+  function istRichtig(f, ein) {
+    return ["soll", "haben"].every(s => {
+      const e = ein[s].filter(z => z.konto || z.betrag), l = f[s];
+      if (e.length !== l.length) return false;
+      const rest = l.slice();
+      return e.every(z => { const i = rest.findIndex(r => r.konto === z.konto && r.betrag === parseBetrag(z.betrag)); if (i < 0) return false; rest.splice(i, 1); return true; });
+    });
+  }
+  function uebenView() {
+    const v = V.view, f = FALL[v.q[v.k]];
+    const zeilen = s => v.ein[s].map((z, i) => `<div class="ez">${s === "haben" ? '<span class="anw">an</span>' : ""}
+      <button class="konto-btn ${z.konto ? "" : "leer"}" data-act="pick" data-s="${s}" data-i="${i}" ${v.geprueft ? "disabled" : ""}>${z.konto ? kontoHtml(z.konto) : "Konto wählen"}</button>
+      <input class="betrag" inputmode="decimal" autocomplete="off" placeholder="Betrag" aria-label="Betrag" value="${esc(z.betrag)}" data-s="${s}" data-i="${i}" ${v.geprueft ? "disabled" : ""}>
+      ${v.ein[s].length > 1 && !v.geprueft ? `<button class="x" data-act="zDel" data-s="${s}" data-i="${i}" aria-label="Zeile löschen">${I.x}</button>` : ""}</div>`).join("")
+      + (v.geprueft ? "" : `<button class="link klein" data-act="zAdd" data-s="${s}">+ Zeile ${s === "soll" ? "Soll" : "Haben"}</button>`);
+    let fb = "";
+    if (v.geprueft) {
+      const summe = s => v.ein[s].reduce((a, z) => a + (parseBetrag(z.betrag) || 0), 0);
+      const ungleich = summe("soll") !== summe("haben");
+      fb = `<section class="karte"><div class="fb ${v.ok ? "ok" : "bad"}"><b>${v.ok ? "Richtig." : "Nicht ganz."}</b> ${v.ok ? "" : ungleich ? "Soll und Haben sind nicht gleich gross. " : ""}${v.ok ? "" : "So wäre es richtig:"}</div>
+        ${v.ok ? "" : satzVonFall(f)}
+        <div class="label">Die 4 Fragen</div>${fragenHtml(f.analyse)}
+        <div class="merke"><div class="label">Merke</div><div>${esc(f.merke)}</div></div>
+        <p class="muted klein"><b>Typischer Fehler:</b> ${esc(f.fehler)}</p>${glossarHtml(f)}
+        <button class="btn breit" data-act="uWeiter">${v.k + 1 < v.q.length ? "Nächster Fall" : "Auswertung"}</button>${melden(`LE ${f.le} · Fall ${f.id}`)}</section>`;
+    }
+    return `${kopf(`${esc(v.titel)} · ${v.k + 1} von ${v.q.length}`)}${segmente(v.q.length, v.k)}
+      <section class="karte fall"><div class="label">LE ${f.le} · ${esc(f.datum)}</div><p>${esc(f.text)}</p></section>
+      <section class="karte"><div class="zeile"><div class="label">Buchungssatz</div><span class="muted klein">Zeilen bestimmst du selbst</span></div>
+        <div class="seite-label">Soll</div>${zeilen("soll")}<div class="seite-label">Haben</div>${zeilen("haben")}
+        ${v.geprueft ? "" : `<button class="btn breit" data-act="uPruefen">Prüfen</button>`}</section>${fb}`;
+  }
+
+  /* Kontenplan-Drill */
+  function drillStart(nrs) {
+    const konten = [...new Set(nrs.flatMap(n => INHALT[n].konten))];
+    const arten = [...new Set(nrs.flatMap(n => INHALT[n].arten))];
+    const ks = shuffle(konten), fragen = [];
+    for (let i = 0; i < 10; i++) {
+      const k = ks[i % ks.length];
+      if (i % 2 === 0 || !ART[k]) {
+        const opts = shuffle([NAME[k]].concat(shuffle(konten.filter(x => x !== k)).slice(0, 3).map(x => NAME[x])));
+        fragen.push({ frage: `Wofür steht <b>${esc(k)}</b>?`, optionen: opts, richtig: opts.indexOf(NAME[k]) });
+      } else {
+        fragen.push({ frage: `<b>${esc(NAME[k])}</b> (${esc(k)}) ist ein …`, optionen: arten.map(a => ARTLABEL[a]), richtig: arten.indexOf(ART[k]) });
+      }
+    }
+    go({ typ: "drill", fragen, k: 0, a: null, richtig: 0, nrs });
+  }
+  function drillView() {
+    const v = V.view, q = v.fragen[v.k];
+    return `${kopf(`Kontenplan-Drill · ${v.k + 1} von ${v.fragen.length}`)}${segmente(v.fragen.length, v.k)}
+      <section class="karte frage"><p class="frage-text gross-text">${q.frage}</p>
+      <div class="optionen">${q.optionen.map((o, j) => {
+        const cls = v.a == null ? "" : (j === q.richtig ? "ok" : j === v.a ? "bad" : "") + (j === v.a ? " neu" : "");
+        return `<button class="opt ${cls}" data-act="dAntwort" data-j="${j}" ${v.a != null ? "disabled" : ""}>${esc(o)}</button>`;
+      }).join("")}</div>
+      ${v.a != null ? `<button class="btn breit" data-act="dWeiter">${v.k + 1 < v.fragen.length ? "Weiter" : "Auswertung"}</button>` : ""}</section>`;
+  }
+
+  /* Ende */
+  function endeView() {
+    const v = V.view;
+    return `${kopf("Fertig")}
+      <section class="karte ende"><div class="ende-icon">${I.check}</div><h2>${esc(v.titel)}</h2>
+      ${v.gesamt ? `<div class="gross">${v.richtig} / ${v.gesamt}</div><p class="muted">${v.richtig === v.gesamt ? "Alles auf Anhieb richtig." : "auf Anhieb richtig"}</p>` : ""}
+      ${v.text ? `<p>${esc(v.text)}</p>` : ""}
+      <div class="aktionen">${(v.buttons || []).map(([t, act, nr], i) => `<button class="${i ? "btn-zwei" : "btn"} breit" data-act="${act}" data-nr="${nr || ""}">${esc(t)}</button>`).join("")}</div></section>`;
+  }
+
+  /* ---------- Üben-Tab ---------- */
+  function uebenTab() {
+    const sel = S.ueAuswahl.filter(n => INHALT[n]);
+    const anzahl = sel.reduce((s, n) => s + INHALT[n].faelle.length, 0), fehler = fehlerListe().length;
+    return `<h1 class="titel">Üben</h1><p class="muted unter">Wähl die Lektionen, die du schon hattest.</p>
+    <div class="chips">${LEKTIONEN.map(([n]) => INHALT[n]
+      ? `<button class="chip ${S.ueAuswahl.includes(n) ? "an" : ""}" data-act="ueSel" data-nr="${n}">LE ${n}</button>`
+      : `<span class="chip aus">LE ${n}</span>`).join("")}</div>
+    <div class="liste">
+      <button class="karte modus tap" data-act="uebenAuswahl" ${anzahl ? "" : "disabled"}><span class="m-icon">${I.stift}</span><span><b>Buchungssätze</b><br><span class="muted klein">${anzahl} Fälle · ohne Zeilen-Vorgabe, wie in der Prüfung</span></span>${I.pfeil}</button>
+      <button class="karte modus tap" data-act="drillStart" ${sel.length ? "" : "disabled"}><span class="m-icon">${I.blitz}</span><span><b>Kontenplan-Drill</b><br><span class="muted klein">10 Fragen: Abkürzungen und Kontoarten</span></span>${I.pfeil}</button>
+      <button class="karte modus tap" data-act="fehlerUeben" ${fehler ? "" : "disabled"}><span class="m-icon">${I.kreis}</span><span><b>Fehler</b><br><span class="muted klein">${fehler ? `${fehler} offen · was du zuletzt falsch hattest` : "Keine offenen Fehler"}</span></span>${I.pfeil}</button>
+    </div>`;
+  }
+
+  /* ---------- Prüfung-Tab ---------- */
+  function pruefungTab() {
+    return `<h1 class="titel">Prüfung</h1><p class="muted unter">So ist die echte Prüfung aufgebaut. Genau so wird die Simulation.</p>
+    <section class="karte gesperrt"><div class="zeile"><div><div class="label">Prüfungssimulation</div><h2>Kommt bis Mo 07.12.</h2></div>${I.lock}</div>
+      <ul class="punkte">
+        <li>6 gemischte Beispiele, ohne Themen-Überschrift</li>
+        <li>90 Minuten Timer</li>
+        <li>Keine Zeilen-Vorgabe: Du entscheidest, wie viele Buchungssätze es braucht</li>
+        <li>Rechnen, buchen, abschliessen, eröffnen: in Schritten wie in der Musterklausur</li>
+        <li>Punkte pro Schritt, Fehler landen in deiner Fehlerliste</li>
+      </ul></section>
+    <section class="karte"><div class="label">Am Prüfungstag erlaubt</div>
+      <ul class="punkte">
+        <li>Nicht programmierbarer Taschenrechner</li>
+        <li>Kontenplan ohne Ergänzungen (Markierungen sind ok)</li>
+        <li>Kugelschreiber blau oder schwarz, kein Bleistift</li>
+        <li>Studierendenausweis</li>
+      </ul>
+      <p class="muted klein">Gerechnet wird in Euro mit österreichischer Umsatzsteuer (20 %, ermässigt 10 %), nicht in Franken.</p>
+      <p class="muted klein">Abkürzungen aus dem Kontenplan sind erlaubt, müssen aber eindeutig sein. Voll ausgeschrieben geht immer.</p></section>`;
+  }
+
+  /* ---------- Einstellungen ---------- */
+  function einstView() {
+    const seg = (key, opts) => `<div class="seg">${opts.map(([v, t]) => `<button class="${String(S[key]) === String(v) ? "an" : ""}" data-act="setz" data-key="${key}" data-v="${v}">${t}</button>`).join("")}</div>`;
+    const v = V.view;
+    return `${kopf("Einstellungen")}<h1 class="titel">Einstellungen</h1>
+    <section class="karte form">
+      <div class="feld"><span>Darstellung</span>${seg("theme", [["system", "System"], ["hell", "Hell"], ["dunkel", "Dunkel"]])}</div>
+      <div class="feld"><span>Konten anzeigen als</span>${seg("anzeige", [["kurz", "Abkürzung"], ["lang", "Voller Name"]])}</div>
+      <div class="feld"><span>Tagesziel</span>${seg("ziel", [[5, "5 Fälle"], [10, "10 Fälle"], [20, "20 Fälle"]])}</div>
+      <label class="feld"><span>Dein Name</span><input class="eingabe" data-key="name" value="${esc(S.name)}" placeholder="für die Begrüssung" autocomplete="given-name"></label>
+      <label class="feld"><span>Prüfungsdatum</span><input class="eingabe" type="date" data-key="pruefung" value="${esc(S.pruefung)}"></label>
+    </section>
+    <section class="karte"><div class="zeile"><div class="label">Meine Meldungen (${S.meld.length})</div>${S.meld.length ? `<button class="link klein" data-act="meldKopieren">Alle kopieren</button>` : ""}</div>
+      ${S.meld.length ? `<ul class="meldungen">${S.meld.map(m => `<li><span class="muted klein">${esc(m.d)}</span> ${esc(m.t)}</li>`).join("")}</ul>
+        ${v.leeren ? `<p>Alle Meldungen löschen?</p><div class="aktionen reihe"><button class="btn-zwei" data-act="meldLeerenJa">Ja, löschen</button><button class="link" data-act="meldLeerenNein">Abbrechen</button></div>` : `<button class="link klein" data-act="meldLeeren">Liste leeren</button>`}`
+        : `<p class="muted klein">Wenn dir eine Lösung komisch vorkommt: „Fehler melden“ tippen. Die Meldung landet hier.</p>`}</section>
+    <section class="karte"><div class="label">App auf den Home-Bildschirm</div>
+      <p class="klein">iPhone: in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Android: Menü ⋮ → „App installieren“. Dann bleibt dein Fortschritt sicher gespeichert.</p></section>
+    <section class="karte"><div class="label">Fortschritt</div>
+      ${v.reset ? `<p>Wirklich alles zurücksetzen? Lektionen, Fälle und Fehlerliste werden gelöscht.</p><div class="aktionen reihe"><button class="btn-zwei rot" data-act="resetJa">Ja, zurücksetzen</button><button class="link" data-act="resetNein">Abbrechen</button></div>`
+        : `<button class="btn-zwei" data-act="reset">Fortschritt zurücksetzen</button>`}</section>
+    <section class="karte"><div class="label">Hinweis</div>
+      <p class="klein muted">Lösungen ohne Gewähr. Kein offizielles Angebot der Universität Liechtenstein. Dein Fortschritt bleibt nur auf diesem Gerät, es wird nichts an einen Server gesendet.</p>
+      <p class="klein muted">Version 0.2 · 13.11.2026</p></section>`;
+  }
+
+  /* ---------- Sheets ---------- */
+  function sheetAuf(html) { sheet.innerHTML = `<div class="sheet-bg" data-act="sheetZu"></div><div class="sheet-box" role="dialog" aria-modal="true">${html}</div>`; sheet.hidden = false; }
+  function sheetZu() { sheet.hidden = true; sheet.innerHTML = ""; }
+  let pickZiel = null;
+  function pickerAuf(s, i) {
+    pickZiel = { s, i };
+    sheetAuf(`<div class="sheet-kopf"><input id="suche" class="eingabe" placeholder="Konto suchen: Kürzel oder Name" autocomplete="off" aria-label="Konto suchen"><button class="link" data-act="sheetZu">Fertig</button></div><div id="kliste" class="kliste"></div>`);
+    kliste("");
+    const su = $("#suche"); su.addEventListener("input", () => kliste(su.value));
+  }
+  function kliste(q) {
+    const f = FALL[V.view.q[V.view.k]], n = norm(q.trim());
+    const item = ([k, v]) => `<button class="kitem" data-act="pickK" data-k="${esc(k)}"><span class="abbr">${esc(k)}</span><span>${esc(v)}</span></button>`;
+    let html;
+    if (!n) {
+      const haeufig = (INHALT[f.le].konten || []).map(k => [k, NAME[k]]);
+      html = `<div class="label">Häufig in LE ${f.le}</div>${haeufig.map(item).join("")}<div class="label">Ganzer Kontenplan</div>${KONTEN.map(item).join("")}`;
+    } else {
+      const t = KONTEN.filter(([k, v]) => norm(k).includes(n) || norm(v).includes(n));
+      html = t.length ? t.map(item).join("") : `<p class="muted klein">Kein Konto gefunden.</p>`;
+    }
+    $("#kliste").innerHTML = html;
+  }
+  function meldenAuf(ctx) {
+    sheetAuf(`<h3>Fehler melden</h3><p class="muted klein">Was stimmt nicht? Die Meldung wird gespeichert und kopiert. Schick sie an Leon.</p>
+      <textarea id="meldText" class="eingabe" rows="5">[${esc(ctx)}] </textarea>
+      <div class="aktionen"><button class="btn breit" data-act="meldSpeichern">Speichern und kopieren</button><button class="link" data-act="sheetZu">Abbrechen</button></div>`);
+    const t = $("#meldText"); t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+  }
+  function kopieren(text, fallbackEl) {
+    try {
+      navigator.clipboard.writeText(text).then(() => toast("Kopiert."), () => { if (fallbackEl) fallbackEl.select(); toast("Gespeichert. Kopieren ging nicht, Text ist markiert."); });
+    } catch (e) { if (fallbackEl) fallbackEl.select(); toast("Gespeichert."); }
+  }
+
+  /* ---------- Aktionen ---------- */
+  const A = {
+    tab: d => tab(d.t),
+    einst: () => go({ typ: "einst" }),
+    schliessen: () => {
+      const v = V.view;
+      if (v && v.zurueck) return go(v.zurueck);
+      if (v && v.nr && INHALT[v.nr] && v.typ !== "le") return go({ typ: "le", nr: v.nr });
+      V.view = null; animiere = "tab"; render(); window.scrollTo(0, 0);
+    },
+    zuTab: () => { V.view = null; animiere = "tab"; render(); window.scrollTo(0, 0); },
+    le: d => go({ typ: "le", nr: +d.nr }),
+    lektion: d => lektionStart(+d.nr),
+    gefuehrt: d => gefStart(+d.nr),
+    uebenLE: d => uebenStart(INHALT[+d.nr].faelle.map(f => f.id), `LE ${d.nr}`, { typ: "le", nr: +d.nr }),
+    uebenAuswahl: () => uebenStart(S.ueAuswahl.filter(n => INHALT[n]).flatMap(n => INHALT[n].faelle.map(f => f.id)), "Buchungssätze"),
+    fehlerUeben: () => uebenStart(fehlerListe(), "Fehler"),
+    drillStart: () => { const nrs = S.ueAuswahl.filter(n => INHALT[n]); drillStart(nrs.length ? nrs : Object.keys(INHALT).map(Number)); },
+    drillLE: d => { drillStart([+d.nr]); V.view.zurueck = { typ: "le", nr: +d.nr }; },
+    hinweisWeg: () => { S.hinweisWeg = true; speichern(); render(); },
+    ueSel: d => { const n = +d.nr, a = S.ueAuswahl; S.ueAuswahl = a.includes(n) ? a.filter(x => x !== n) : a.concat(n).sort((x, y) => x - y); speichern(); render(); },
+
+    antwort: d => { const v = V.view, j = +d.j, c = INHALT[v.nr].abschnitte[v.i].check; v.letzte = j; if (j === c.richtig) v.a = j; else if (!v.falsch.includes(j)) v.falsch.push(j); render(); },
+    weiter: () => {
+      const v = V.view, L = INHALT[v.nr], l = lek(v.nr);
+      l.ab = Math.max(l.ab || 0, v.i + 1); speichern();
+      if (v.i + 1 < L.abschnitte.length) go({ typ: "lektion", nr: v.nr, i: v.i + 1, a: null, falsch: [] });
+      else go({ typ: "ende", nr: v.nr, titel: `Lektion ${v.nr} geschafft`, text: "Jetzt die Fälle Schritt für Schritt: Du beantwortest die 4 Fragen einzeln, die App baut daraus den Buchungssatz.", buttons: [["Schritt für Schritt", "gefuehrt", v.nr], ["Zur Übersicht", "le", v.nr]] });
+    },
+    zurueckAbschnitt: () => { const v = V.view; go({ typ: "lektion", nr: v.nr, i: v.i - 1, a: null, falsch: [] }); },
+
+    gefWahl: d => { const v = V.view; v.wahl = v.wahl.includes(d.k) ? v.wahl.filter(x => x !== d.k) : v.wahl.concat(d.k); v.fx = null; render(); },
+    gefKonten: () => {
+      const v = V.view, soll = kontenVon(FALL[v.q[v.k]]);
+      const falsch = v.wahl.filter(k => !soll.includes(k)), fehlt = soll.filter(k => !v.wahl.includes(k));
+      if (!falsch.length && !fehlt.length) { v.stufe = "analyse"; v.fx = null; render(); return; }
+      v.sauber = false;
+      v.fx = falsch.length ? `${falsch.length === 1 ? "Ein Konto gehört" : falsch.length + " Konten gehören"} nicht dazu (rot).` + (fehlt.length ? ` Und es ${fehlt.length === 1 ? "fehlt noch eins" : "fehlen noch " + fehlt.length}.` : "")
+        : `Es ${fehlt.length === 1 ? "fehlt noch ein Konto" : "fehlen noch " + fehlt.length + " Konten"}.`;
+      render();
+    },
+    gefSet: d => { const v = V.view; v.a[d.k] = Object.assign({}, v.a[d.k], { [d.f]: d.v }); if (v.fx && v.fx[d.k]) delete v.fx[d.k][d.f]; render(); },
+    gefAnalyse: () => {
+      const v = V.view, f = FALL[v.q[v.k]];
+      const unvollstaendig = f.analyse.some(([k]) => { const a = v.a[k] || {}; return !a.art || !a.s || (!OHNE_R.includes(a.art) && !a.r); });
+      if (unvollstaendig) { toast("Fülle zuerst alle Felder aus."); return; }
+      let alles = true; v.fx = {};
+      f.analyse.forEach(([k, art, r, s]) => {
+        const a = v.a[k] || {}, x = {};
+        const mitR = !OHNE_R.includes(art);
+        x.art = a.art === art; x.s = a.s === s; if (mitR) x.r = a.r === r;
+        if (Object.values(x).includes(false) || !a.art || !a.s || (mitR && !a.r)) alles = false;
+        v.fx[k] = x;
+      });
+      if (alles) { v.stufe = "fertig"; werten(f.id, v.sauber); if (v.sauber) v.richtig++; } else v.sauber = false;
+      render();
+    },
+    gefWeiter: () => {
+      const v = V.view;
+      if (v.k + 1 < v.q.length) { v.k++; gefFall(); window.scrollTo(0, 0); return; }
+      lek(v.nr).gef = true; speichern();
+      go({ typ: "ende", nr: v.nr, titel: "Schritt für Schritt geschafft", richtig: v.richtig, gesamt: v.q.length, text: "Jetzt alle Fälle ohne Hilfe, mit freier Eingabe wie in der Prüfung.", buttons: [["Alle Fälle üben", "uebenLE", v.nr], ["Zur Übersicht", "le", v.nr]] });
+    },
+
+    pick: d => pickerAuf(d.s, +d.i),
+    pickK: d => { const v = V.view; v.ein[pickZiel.s][pickZiel.i].konto = d.k; sheetZu(); render(); },
+    zAdd: d => { V.view.ein[d.s].push({ konto: "", betrag: "" }); render(); },
+    zDel: d => { const z = V.view.ein[d.s]; if (z.length > 1) z.splice(+d.i, 1); render(); },
+    uPruefen: () => {
+      const v = V.view, f = FALL[v.q[v.k]];
+      if (![...v.ein.soll, ...v.ein.haben].some(z => z.konto)) { toast("Wähl zuerst mindestens ein Konto."); return; }
+      v.ok = istRichtig(f, v.ein); v.geprueft = true; if (v.ok) v.richtig++; werten(f.id, v.ok); render();
+    },
+    uWeiter: () => {
+      const v = V.view;
+      if (v.k + 1 < v.q.length) { v.k++; neueEingabe(); window.scrollTo(0, 0); return; }
+      const f = fehlerListe().length;
+      go({ typ: "ende", titel: v.titel, richtig: v.richtig, gesamt: v.q.length, zurueck: v.zurueck,
+        buttons: [f ? ["Fehler üben (" + f + ")", "fehlerUeben"] : ["Nochmal mischen", "uebenAuswahl"], ["Fertig", "schliessen"]] });
+    },
+
+    dAntwort: d => { const v = V.view; v.a = +d.j; if (v.a === v.fragen[v.k].richtig) v.richtig++; render(); },
+    dWeiter: () => {
+      const v = V.view;
+      if (v.k + 1 < v.fragen.length) { v.k++; v.a = null; animiere = "vor"; render(); window.scrollTo(0, 0); return; }
+      go({ typ: "ende", titel: "Kontenplan-Drill", richtig: v.richtig, gesamt: v.fragen.length, zurueck: v.zurueck, buttons: [["Nochmal", "drillStart"], ["Fertig", "schliessen"]] });
+    },
+
+    melden: d => meldenAuf(d.ctx),
+    meldSpeichern: () => {
+      const t = $("#meldText"), text = t.value.trim(); if (!text) return;
+      S.meld.push({ d: new Date().toLocaleDateString("de-DE"), t: text }); speichern();
+      kopieren(text, t); sheetZu();
+    },
+    meldKopieren: () => kopieren(S.meld.map(m => `${m.d} ${m.t}`).join("\n")),
+    meldLeeren: () => { V.view.leeren = true; render(); },
+    meldLeerenNein: () => { V.view.leeren = false; render(); },
+    meldLeerenJa: () => { S.meld = []; speichern(); V.view.leeren = false; render(); },
+    sheetZu: () => sheetZu(),
+    setz: d => { const n = Number(d.v); S[d.key] = d.key === "ziel" ? n : d.v; speichern(); if (d.key === "theme") themeAnwenden(); render(); },
+    reset: () => { V.view.reset = true; render(); },
+    resetNein: () => { V.view.reset = false; render(); },
+    resetJa: () => { const behalten = { theme: S.theme, name: S.name, anzeige: S.anzeige, pruefung: S.pruefung, ziel: S.ziel }; S = Object.assign(kopie(START), behalten); speichern(); V.view.reset = false; toast("Fortschritt zurückgesetzt."); render(); }
+  };
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-act]"); if (!t || t.disabled) return;
+    const fn = A[t.dataset.act]; if (fn) { e.preventDefault(); fn(t.dataset, t); }
+  });
+  document.addEventListener("input", e => {
+    const t = e.target;
+    if (t.classList.contains("betrag") && V.view && V.view.ein) V.view.ein[t.dataset.s][+t.dataset.i].betrag = t.value;
+    if (t.dataset.key === "name") { S.name = t.value.slice(0, 30); speichern(); }
+    if (t.dataset.key === "pruefung" && t.value) { S.pruefung = t.value; speichern(); }
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) sheetZu(); });
+
+  themeAnwenden();
+  render();
+})();
+
+</script>
+
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
+</script>
+</body>
+</html>
